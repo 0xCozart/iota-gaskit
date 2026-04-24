@@ -1,42 +1,77 @@
 # IOTA GasKit
 
-IOTA GasKit is an open-source toolkit for deploying, securing, monitoring, and integrating sponsored transaction infrastructure around the official IOTA Gas Station component.
+**Open-source infrastructure toolkit for gas-sponsored IOTA transactions.**
 
-It is designed for IOTA dApp teams that want gasless onboarding without rebuilding the same production tooling from scratch: deployment templates, app keys, policy controls, quotas, SDK wrappers, an operator dashboard, metrics, alert examples, and hardening documentation.
+IOTA GasKit helps IOTA builders deploy, secure, monitor, and integrate sponsored-transaction infrastructure around the official IOTA Gas Station component.
 
-> Grant scope: this repository is the open-source toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the grant-funded core remains independently deployable and inspectable.
+It is designed for teams building IOTA dApps, enterprise workflows, identity products, notarization systems, RWA/product-passport apps, supply-chain tools, games, wallets, and hackathon demos where users should not need to acquire IOTA tokens before experiencing product value.
+
+> **Grant scope:** this repository is the open-source toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the grant-funded core remains independently deployable, inspectable, forkable, and useful without any hosted SaaS.
+
+## One-line pitch
+
+IOTA GasKit is the missing production-readiness layer around IOTA Gas Station: deployment templates, policy controls, quotas, app keys, SDK wrappers, dashboard visibility, observability, and hardening docs.
 
 ## Why GasKit exists
 
-IOTA Gas Station solves the core sponsored-transaction primitive. Production builders still need the adoption layer around it:
+The official IOTA Gas Station component solves the core sponsored-transaction primitive: an application can sponsor gas fees for its users.
 
-- safe local and cloud deployment paths;
-- app-level credentials and quotas;
+Production teams still need the surrounding operator and developer layer:
+
+- repeatable local and testnet deployment flows;
+- app-level credentials and sponsorship budgets;
 - package/function allowlists;
-- wallet and request limits;
-- usage logs and policy rejection reasons;
-- SDK and backend examples;
-- operator visibility and alerts;
-- sponsor-wallet and secret-management guidance.
+- wallet request limits and denylists;
+- structured policy rejection reasons;
+- request, execution, and spend visibility;
+- SDK helpers and backend integration examples;
+- dashboard views for app keys, usage, health, and errors;
+- sponsor-wallet, Redis, reverse-proxy, and KMS hardening guidance;
+- grant-reviewable demos and documentation.
 
-GasKit packages those pieces into a reusable open-source toolkit.
+GasKit packages those pieces into a reusable open-source toolkit so every IOTA builder does not have to recreate the same safety and operations layer.
 
-## Current status
+## What is in this repo now
 
-This repo is in grant-readiness sprint mode. The current implementation is being extracted from a working GaaS prototype that already includes an Express gateway, dashboard, API-key auth, quota tracking, Docker deployment, and monitoring assets.
+This repository is currently in **grant-readiness sprint** mode. It has been extracted from a working GaaS proof-of-concept that already includes an Express gas sponsorship gateway, API-key auth, quota tracking, transaction logging, dashboard UI, Docker deployment, and monitoring assets.
 
-Implemented in this clean grant repo now:
+The clean grant repo now includes:
 
-- open-source project hygiene;
+- Apache-2.0 license;
+- contribution and security policies;
+- issue and pull request templates;
+- grant scope and managed-service separation docs;
 - policy reason-code/shared type scaffold;
 - policy gateway decision engine scaffold with tests;
 - TypeScript SDK scaffold with tests;
-- demo app and example integration scaffolds;
-- grant, security, architecture, and reviewer docs.
+- demo app and backend example scaffolds;
+- safe Gas Station config template;
+- policy YAML example;
+- architecture diagram and architecture docs;
+- threat model and production hardening docs;
+- grant milestone plan, reviewer checklist, and demo script.
 
-Upcoming grant milestones add the full local deployment demo, complete policy gateway integration, operator dashboard views, observability pack, and final demo video.
+## Current proof status
+
+The current scaffold verifies successfully locally:
+
+```bash
+npm install
+npm run grant:check
+```
+
+Latest local verification:
+
+- `npm test`: 9 tests passed, 0 failed.
+- `npm run typecheck`: passed.
+- secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
+- initial public repo scaffold committed and pushed.
+
+See `docs/milestone-0-proof.md` for exact evidence.
 
 ## Target architecture
+
+![IOTA GasKit architecture](docs/assets/iota-gaskit-architecture.svg)
 
 ```mermaid
 flowchart LR
@@ -61,25 +96,74 @@ packages/
   shared-types/           # Shared policy/request/response types
 deploy/
   docker-compose/         # Local deployment templates
+  gas-station/            # Safe Gas Station config templates
 docs/
-  quickstart.md
   architecture.md
+  demo-script.md
   deployment.md
+  grant-application.md
+  grant-milestones.md
+  grant-scope.md
+  milestone-0-proof.md
   policy.md
+  production-hardening.md
+  quickstart.md
+  reviewer-checklist.md
   sdk.md
   threat-model.md
-  production-hardening.md
-  grant-milestones.md
-  reviewer-checklist.md
 examples/
   nextjs-api-route/
   node-backend/
   policies/
 ```
 
+## Packages
+
+### `@iota-gaskit/shared-types`
+
+Shared TypeScript types for policy decisions, policy reason codes, sponsorship policy, and request context.
+
+### `@iota-gaskit/policy-gateway`
+
+Policy decision scaffold for validating app status, credentials, daily limits, gas budget, wallet denylist, package allowlist, and function allowlist.
+
+Current tests cover:
+
+- `AUTH_MISSING`
+- `APP_DISABLED`
+- `GAS_BUDGET_TOO_HIGH`
+- `PACKAGE_NOT_ALLOWED`
+- `WALLET_DENIED`
+- valid sponsorship request
+
+### `@iota-gaskit/sdk`
+
+TypeScript client scaffold for dApp backends.
+
+Current SDK supports request construction for:
+
+- `reserveGas()`
+- `executeSponsoredTransaction()`
+
+It also includes typed error classes for policy/auth/network-style failures.
+
+## Grant milestones
+
+Recommended Tier 2 grant ask: **$49,000**.
+
+| Milestone | Budget | Outcome |
+| --- | ---: | --- |
+| M1 Deployment Kit and Demo | $10,000 | Clean local stack and sponsored transaction demo |
+| M2 Policy Gateway and Quotas | $12,000 | App keys, quotas, wallet limits, package/function allowlists, reason codes |
+| M3 SDK and Examples | $8,000 | TypeScript SDK, Next.js example, Node backend example |
+| M4 Dashboard and Usage Tracking | $12,000 | Operator dashboard with app/wallet/rejection/usage views |
+| M5 Hardening, Observability, Final Demo | $7,000 | Threat model, monitoring, alerts, hardening docs, final video |
+
+See `docs/grant-milestones.md`.
+
 ## Quickstart preview
 
-Install dependencies and run the scaffold tests:
+Install dependencies and run the current scaffold checks:
 
 ```bash
 npm install
@@ -87,12 +171,49 @@ npm test
 npm run typecheck
 ```
 
-The full 30-minute local Gas Station quickstart is tracked in `docs/quickstart.md` and will be completed during Milestone 1.
+The complete 30-minute local Gas Station quickstart is a Milestone 1 deliverable and is tracked in `docs/quickstart.md`.
+
+## Security posture
+
+GasKit is designed to fail closed and prioritize sponsor-wallet safety.
+
+Never commit:
+
+- sponsor private keys;
+- IOTA wallet mnemonics or exported keypairs;
+- Gas Station bearer tokens;
+- app API keys;
+- JWT/session secrets;
+- Stripe/Resend/Supabase credentials;
+- local `.env` files or local databases.
+
+See:
+
+- `SECURITY.md`
+- `docs/threat-model.md`
+- `docs/production-hardening.md`
+- `docs/security/sponsor-wallet.md`
+- `docs/security/secrets.md`
+
+## Open-source vs future managed service
+
+The grant funds reusable public-good infrastructure. The open-source toolkit must remain useful to any IOTA builder who wants to self-host.
+
+A future managed service may later provide:
+
+- hosted GasKit deployments;
+- managed sponsor-wallet operations;
+- paid support;
+- enterprise onboarding;
+- SLA-backed monitoring;
+- compliance exports.
+
+Those managed-service features are not required for the grant MVP. See `docs/managed-service-roadmap.md`.
 
 ## License
 
 Apache-2.0. See `LICENSE`.
 
-## Security
+## Contributing
 
-Do not commit sponsor private keys, API keys, bearer tokens, or wallet secrets. See `SECURITY.md`, `docs/security/secrets.md`, and `docs/security/sponsor-wallet.md`.
+See `CONTRIBUTING.md`.
