@@ -1,24 +1,27 @@
 # Reviewer Checklist
 
-Before submission:
+Use this checklist to distinguish what is complete for grant submission from what remains as funded milestone work.
 
-- [ ] Public repo exists.
-- [ ] README explains open-source toolkit value.
-- [ ] License exists.
-- [ ] Contribution guide exists.
-- [ ] Security policy exists.
-- [ ] Threat model exists.
-- [ ] Grant milestones are mapped to deliverables.
-- [ ] Demo script exists.
-- [ ] Tests pass.
-- [ ] No secrets are committed.
+## Before submission
 
-Before grant completion:
+- [x] Public repo exists.
+- [x] README explains open-source toolkit value.
+- [x] License exists.
+- [x] Contribution guide exists.
+- [x] Security policy exists.
+- [x] Threat model exists.
+- [x] Grant milestones are mapped to deliverables.
+- [x] Demo script exists.
+- [x] Tests pass locally.
+- [x] No obvious secrets are committed in the clean scaffold.
+- [x] Reviewer walkthrough exists.
 
-- [ ] Local quickstart works.
+## Before grant completion
+
+- [ ] Local quickstart works end-to-end against IOTA Gas Station.
 - [ ] Demo dApp executes a sponsored transaction.
-- [ ] Policy gateway enforces app/wallet/package/function limits.
-- [ ] SDK is documented and tested.
+- [ ] Policy gateway enforces app/wallet/package/function limits in the gateway proxy path.
+- [ ] SDK is documented, tested, packaged, and used by examples.
 - [ ] Dashboard shows health, usage, and rejection logs.
 - [ ] Observability pack and hardening docs are complete.
 - [ ] Final demo video is published.

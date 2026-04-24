@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createGasKitClient, GasKitPolicyError } from "./index.js";
+import { createGasKitClient, GasKitAuthError, GasKitError, GasKitPolicyError } from "./index.js";
 
 test("reserveGas constructs the expected request", async () => {
   const calls: Array<{ url: string; init: RequestInit }> = [];
   const client = createGasKitClient({
-    baseUrl: "https://api.example.test/",
+    baseUrl: "https://api.example.test///",
     apiKey: "test-key",
     fetchImpl: async (url, init) => {
       calls.push({ url: String(url), init: init ?? {} });
@@ -41,6 +41,22 @@ test("reserveGas constructs the expected request", async () => {
   });
 });
 
+test("reserveGas rejects malformed success responses", async () => {
+  const client = createGasKitClient({
+    baseUrl: "https://api.example.test",
+    apiKey: "test-key",
+    fetchImpl: async () => new Response(JSON.stringify({ result: {} }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }),
+  });
+
+  await assert.rejects(
+    () => client.reserveGas({ gasBudget: 100 }),
+    (error) => error instanceof GasKitError && error.message.includes("result.reservation_id"),
+  );
+});
+
 test("executeSponsoredTransaction returns transaction digest", async () => {
   const client = createGasKitClient({
     baseUrl: "https://api.example.test",
@@ -58,6 +74,22 @@ test("executeSponsoredTransaction returns transaction digest", async () => {
   });
 
   assert.equal(response.digest, "digest-1");
+});
+
+test("auth rejection throws GasKitAuthError", async () => {
+  const client = createGasKitClient({
+    baseUrl: "https://api.example.test",
+    apiKey: "test-key",
+    fetchImpl: async () => new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    }),
+  });
+
+  await assert.rejects(
+    () => client.reserveGas({ gasBudget: 100 }),
+    (error) => error instanceof GasKitAuthError && error.status === 401,
+  );
 });
 
 test("policy rejection throws GasKitPolicyError", async () => {

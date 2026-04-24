@@ -33,9 +33,9 @@ GasKit packages those pieces into a reusable open-source toolkit so every IOTA b
 
 ## What is in this repo now
 
-This repository is currently in **grant-readiness sprint** mode. It has been extracted from a working GaaS proof-of-concept that already includes an Express gas sponsorship gateway, API-key auth, quota tracking, transaction logging, dashboard UI, Docker deployment, and monitoring assets.
+This repository is currently in **grant-readiness sprint** mode. It is a clean public scaffold informed by an external working GaaS proof-of-concept that demonstrated an Express gas sponsorship gateway, API-key auth, quota tracking, transaction logging, dashboard UI, Docker deployment shape, and monitoring assets.
 
-The clean grant repo now includes:
+The clean grant repo itself now includes:
 
 - Apache-2.0 license;
 - contribution and security policies;
@@ -62,10 +62,11 @@ npm run grant:check
 
 Latest local verification:
 
-- `npm test`: 9 tests passed, 0 failed.
-- `npm run typecheck`: passed.
+- `npm test`: policy gateway and SDK tests passed locally.
+- `npm run typecheck`: passed locally.
+- `npm run pack:check`: workspace package dry-runs completed locally.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
-- initial public repo scaffold committed and pushed.
+- public repo scaffold committed and pushed.
 
 See `docs/milestone-0-proof.md` for exact evidence.
 
@@ -105,6 +106,7 @@ docs/
   grant-milestones.md
   grant-scope.md
   milestone-0-proof.md
+  reviewer-walkthrough.md
   policy.md
   production-hardening.md
   quickstart.md
@@ -119,6 +121,9 @@ examples/
 
 ## Packages
 
+The monorepo root is marked `private` to prevent accidental publication of the workspace root. Package-level publishing is a later milestone path; the current workspace packages build and pack locally for verification.
+
+
 ### `@iota-gaskit/shared-types`
 
 Shared TypeScript types for policy decisions, policy reason codes, sponsorship policy, and request context.
@@ -130,9 +135,12 @@ Policy decision scaffold for validating app status, credentials, daily limits, g
 Current tests cover:
 
 - `AUTH_MISSING`
+- `AUTH_INVALID`
 - `APP_DISABLED`
+- `APP_DAILY_REQUEST_LIMIT_EXCEEDED`
 - `GAS_BUDGET_TOO_HIGH`
-- `PACKAGE_NOT_ALLOWED`
+- `PACKAGE_NOT_ALLOWED`, including missing package metadata when an allowlist is configured
+- `FUNCTION_NOT_ALLOWED`, including missing function metadata when an allowlist is configured
 - `WALLET_DENIED`
 - valid sponsorship request
 
@@ -145,7 +153,7 @@ Current SDK supports request construction for:
 - `reserveGas()`
 - `executeSponsoredTransaction()`
 
-It also includes typed error classes for policy/auth/network-style failures.
+It also includes typed error classes for auth, policy, and malformed-response failures.
 
 ## Grant milestones
 
@@ -159,7 +167,7 @@ Recommended Tier 2 grant ask: **$49,000**.
 | M4 Dashboard and Usage Tracking | $12,000 | Operator dashboard with app/wallet/rejection/usage views |
 | M5 Hardening, Observability, Final Demo | $7,000 | Threat model, monitoring, alerts, hardening docs, final video |
 
-See `docs/grant-milestones.md`.
+See `docs/grant-milestones.md`. Reviewers can start with `docs/reviewer-walkthrough.md`.
 
 ## Quickstart preview
 

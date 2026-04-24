@@ -8,6 +8,10 @@ function reject(reasonCode: Exclude<PolicyDecision, { allowed: true }>["reasonCo
   return { allowed: false, reasonCode, message };
 }
 
+function hasConfiguredAllowlist(values: string[] | undefined): values is string[] {
+  return Array.isArray(values) && values.length > 0;
+}
+
 export function evaluateSponsorshipPolicy(
   policy: SponsorshipPolicy,
   request: SponsorshipRequestContext,
@@ -61,17 +65,24 @@ export function evaluateSponsorshipPolicy(
     return reject("WALLET_DAILY_LIMIT_EXCEEDED", "This wallet reached its daily sponsorship limit.");
   }
 
-  if (request.packageId && !policy.allowedPackages.includes(request.packageId)) {
-    return reject("PACKAGE_NOT_ALLOWED", "The requested package is not allowlisted.");
+  if (hasConfiguredAllowlist(policy.allowedPackages)) {
+    if (!request.packageId) {
+      return reject("PACKAGE_NOT_ALLOWED", "Package metadata is required when a package allowlist is configured.");
+    }
+
+    if (!policy.allowedPackages.includes(request.packageId)) {
+      return reject("PACKAGE_NOT_ALLOWED", "The requested package is not allowlisted.");
+    }
   }
 
-  if (
-    request.functionName &&
-    policy.allowedFunctions &&
-    policy.allowedFunctions.length > 0 &&
-    !policy.allowedFunctions.includes(request.functionName)
-  ) {
-    return reject("FUNCTION_NOT_ALLOWED", "The requested function is not allowlisted.");
+  if (hasConfiguredAllowlist(policy.allowedFunctions)) {
+    if (!request.functionName) {
+      return reject("FUNCTION_NOT_ALLOWED", "Function metadata is required when a function allowlist is configured.");
+    }
+
+    if (!policy.allowedFunctions.includes(request.functionName)) {
+      return reject("FUNCTION_NOT_ALLOWED", "The requested function is not allowlisted.");
+    }
   }
 
   return { allowed: true };

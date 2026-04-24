@@ -4,7 +4,13 @@
 
 Please report suspected vulnerabilities privately before opening a public issue.
 
-Preferred contact for the grant sprint: open a private maintainer channel or email the project maintainer listed in the final public repository metadata. Do not include exploit details in a public issue until maintainers have acknowledged and triaged the report.
+Preferred path:
+
+1. Use GitHub Security Advisories for this repository if the feature is enabled.
+2. If advisories are not enabled, contact the repository owner/maintainer through the GitHub repository owner profile and request a private disclosure channel before sharing exploit details.
+3. Do not include sponsor-wallet keys, exploit payloads, or reproduction details in a public issue until maintainers have acknowledged and triaged the report.
+
+If you accidentally exposed a sponsor wallet, app API key, Gas Station bearer token, or similar secret, rotate the credential immediately. Removing it from the working tree is not enough once it has been committed, pushed, copied into logs, or shared.
 
 ## Sensitive data rules
 

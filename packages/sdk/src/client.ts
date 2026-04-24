@@ -17,8 +17,17 @@ async function parseJson(response: Response): Promise<unknown> {
   return response.json().catch(() => ({}));
 }
 
+function asRecord(value: unknown): JsonRecord {
+  return typeof value === "object" && value !== null ? (value as JsonRecord) : {};
+}
+
+function requireString(value: unknown, fieldPath: string, raw: unknown): string {
+  if (typeof value === "string" && value.length > 0) return value;
+  throw new GasKitError(`Malformed GasKit response: missing ${fieldPath}.`, undefined, raw);
+}
+
 function buildError(status: number, body: unknown): GasKitError {
-  const record = typeof body === "object" && body !== null ? (body as JsonRecord) : {};
+  const record = asRecord(body);
   const message =
     typeof record["message"] === "string"
       ? record["message"]
@@ -63,10 +72,10 @@ export function createGasKitClient(options: GasKitClientOptions) {
         function_name: request.functionName,
       });
 
-      const result = (json["result"] ?? {}) as JsonRecord;
+      const result = asRecord(json["result"]);
       return {
-        reservationId: String(result["reservation_id"] ?? ""),
-        gasKitTransactionId: String(json["_saas_tx_id"] ?? json["gasKitTransactionId"] ?? ""),
+        reservationId: requireString(result["reservation_id"], "result.reservation_id", json),
+        gasKitTransactionId: requireString(json["_saas_tx_id"] ?? json["gasKitTransactionId"], "_saas_tx_id", json),
         sponsorAddress: typeof result["sponsor_address"] === "string" ? result["sponsor_address"] : undefined,
         gasCoins: Array.isArray(result["gas_coins"]) ? result["gas_coins"] : undefined,
         raw: json,
@@ -83,7 +92,7 @@ export function createGasKitClient(options: GasKitClientOptions) {
         user_sig: request.userSignature,
       });
 
-      const effects = (json["effects"] ?? {}) as JsonRecord;
+      const effects = asRecord(json["effects"]);
       return {
         digest:
           typeof effects["transactionDigest"] === "string"

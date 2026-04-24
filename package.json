@@ -10,13 +10,18 @@
     "apps/*"
   ],
   "scripts": {
-    "test": "node --import tsx --test packages/*/src/*.test.ts",
-    "typecheck": "tsc --noEmit",
-    "grant:check": "npm test && npm run typecheck"
+    "build": "npm run build -w @iota-gaskit/shared-types && npm run build -w @iota-gaskit/policy-gateway && npm run build -w @iota-gaskit/sdk",
+    "test": "npm run build && node --import tsx --test packages/*/src/*.test.ts",
+    "typecheck": "npm run build && tsc --noEmit",
+    "pack:check": "npm run build && npm pack --dry-run -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk",
+    "grant:check": "npm test && npm run typecheck && npm run pack:check"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",
     "tsx": "^4.20.0",
     "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

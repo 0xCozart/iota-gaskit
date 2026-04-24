@@ -35,6 +35,7 @@ Grant-facing docs:
 - `docs/grant-milestones.md`
 - `docs/grant-scope.md`
 - `docs/reviewer-checklist.md`
+- `docs/reviewer-walkthrough.md`
 - `docs/demo-script.md`
 - `docs/architecture.md`
 - `docs/assets/iota-gaskit-architecture.svg`
@@ -74,8 +75,8 @@ npm test
 Latest local result:
 
 ```text
-tests 9
-pass 9
+tests 16
+pass 16
 fail 0
 cancelled 0
 skipped 0
@@ -91,7 +92,7 @@ npm run typecheck
 Latest local result:
 
 ```text
-tsc --noEmit
+npm run build && tsc --noEmit
 exit code 0
 ```
 
@@ -104,7 +105,7 @@ npm run grant:check
 Latest local result:
 
 ```text
-npm test && npm run typecheck
+npm test && npm run typecheck && npm run pack:check
 exit code 0
 ```
 
@@ -113,16 +114,23 @@ exit code 0
 Policy gateway tests verify:
 
 - missing auth rejects with `AUTH_MISSING`;
+- app ID mismatch rejects with `AUTH_INVALID`;
 - disabled app rejects with `APP_DISABLED`;
+- daily request limit rejects with `APP_DAILY_REQUEST_LIMIT_EXCEEDED`;
 - high gas budget rejects with `GAS_BUDGET_TOO_HIGH`;
 - non-allowlisted package rejects with `PACKAGE_NOT_ALLOWED`;
+- missing package metadata fails closed when package allowlists are configured;
+- missing function metadata fails closed when function allowlists are configured;
+- non-allowlisted function rejects with `FUNCTION_NOT_ALLOWED`;
 - denied wallet rejects with `WALLET_DENIED`;
 - valid request is allowed.
 
 SDK tests verify:
 
 - `reserveGas()` constructs the expected request;
+- malformed successful reserve responses throw `GasKitError`;
 - `executeSponsoredTransaction()` returns a transaction digest;
+- auth rejection throws `GasKitAuthError`;
 - policy rejection throws `GasKitPolicyError`.
 
 ## Secret-oriented scan
@@ -146,7 +154,7 @@ This is not a substitute for a full professional secret scan before every releas
 
 ## Prototype evidence inherited from source project
 
-The clean repo was extracted from a working GaaS prototype at `/mnt/d/CURSOR/gas_station`. That source prototype has verified:
+The clean repo was extracted from a separate non-public GaaS source prototype. That source prototype has verified:
 
 - Express gas sponsorship gateway;
 - API-key authentication;
@@ -180,7 +188,7 @@ Milestone 0 does not claim that:
 
 - the full local Gas Station quickstart is complete;
 - the demo dApp executes a real sponsored testnet transaction yet;
-- package/function allowlists are integrated into the gateway proxy yet;
+- package/function allowlists are integrated into the gateway proxy yet beyond the standalone policy decision scaffold;
 - the operator dashboard has all PRD views yet;
 - production hardening is complete.
 

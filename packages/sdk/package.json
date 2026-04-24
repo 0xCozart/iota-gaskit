@@ -5,10 +5,25 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@iota-gaskit/shared-types": "file:../shared-types"
+    "@iota-gaskit/shared-types": "0.0.0-prerelease"
+  },
+  "description": "TypeScript SDK scaffold for IOTA GasKit sponsorship gateways.",
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
