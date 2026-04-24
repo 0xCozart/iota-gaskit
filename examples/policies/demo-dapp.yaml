@@ -1,0 +1,14 @@
+apps:
+  demo-dapp:
+    api_key_name: demo-dapp-key
+    status: active
+    daily_budget_iota: 10
+    daily_request_limit: 1000
+    max_requests_per_wallet_per_day: 25
+    max_gas_budget_per_tx: 50000000
+    allowed_packages:
+      - "0xYOUR_DEMO_PACKAGE_ID"
+    allowed_functions:
+      - "mint_badge"
+      - "free_trial"
+    denied_wallets: []

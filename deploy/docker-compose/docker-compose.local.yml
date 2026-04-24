@@ -1,0 +1,8 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # The official IOTA Gas Station service is wired during Milestone 1.
+  # This template intentionally avoids embedding sponsor keys.

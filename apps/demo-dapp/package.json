@@ -1,0 +1,13 @@
+{
+  "name": "@iota-gaskit/demo-dapp",
+  "version": "0.0.0-prerelease",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "echo 'Demo dApp implementation lands in Milestone 1'"
+  },
+  "dependencies": {
+    "@iota-gaskit/sdk": "file:../../packages/sdk"
+  }
+}

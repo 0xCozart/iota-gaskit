@@ -1,0 +1,22 @@
+{
+  "name": "iota-gaskit",
+  "version": "0.0.0-prerelease",
+  "private": true,
+  "description": "Open-source toolkit for deploying, securing, monitoring, and integrating IOTA gas-sponsored transactions.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "node --import tsx --test packages/*/src/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "grant:check": "npm test && npm run typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  }
+}

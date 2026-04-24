@@ -1,0 +1,29 @@
+# Safe template for IOTA Gas Station configuration.
+# Do not commit real sponsor private keys.
+# Generate a deployment-specific config from this template using environment secrets.
+
+signer-config:
+  local:
+    keypair: "${GAS_STATION_KEYPAIR}"
+
+rpc-host-ip: 0.0.0.0
+rpc-port: 9527
+metrics-port: 9184
+
+storage-config:
+  redis:
+    redis-url: "redis://redis:6379"
+
+fullnode-url: "${IOTA_RPC_URL}"
+
+coin-init-config:
+  target-init-balance: 100000000
+  refresh-interval-sec: 86400
+
+daily-gas-usage-cap: 1500000000000
+max-gas-budget: 2000000000
+
+access-controller:
+  # Production deployments should use bearer-token, private-network-only,
+  # or an external authenticated proxy. Disabled access is for isolated local demos only.
+  access-policy: "${GAS_STATION_ACCESS_POLICY:-disabled}"

@@ -1,0 +1,41 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+!.env.*.example
+secrets.txt
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+/dist/
+*/dist/
+.next/
+*/.next/
+coverage/
+.turbo/
+
+# Runtime data
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+data/redis/*.aof
+data/redis/*.rdb
+data/redis/appendonlydir/
+
+# Logs and editor/OS noise
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json
+
+# Local tooling
+.gitnexus/
+.hermes/
