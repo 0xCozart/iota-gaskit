@@ -31,6 +31,8 @@ Open-source hygiene:
 
 Grant-facing docs:
 
+- `docs/product-requirements.md`
+- `docs/continuation-brief-2026-04-26.md`
 - `docs/grant-application.md`
 - `docs/grant-milestones.md`
 - `docs/grant-scope.md`

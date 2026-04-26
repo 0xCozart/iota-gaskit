@@ -109,7 +109,7 @@ A clean public repository has been scaffolded from a working GaaS prototype:
 
 Local verification from the grant-readiness sprint:
 
-- `npm test`: 9 tests passed, 0 failed.
+- `npm test`: 16 tests passed, 0 failed.
 - `npm run typecheck`: passed.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
 

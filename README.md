@@ -102,6 +102,8 @@ docs/
   architecture.md
   demo-script.md
   deployment.md
+  product-requirements.md
+  continuation-brief-2026-04-26.md
   grant-application.md
   grant-milestones.md
   grant-scope.md
