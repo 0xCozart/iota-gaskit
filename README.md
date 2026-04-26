@@ -67,6 +67,7 @@ Latest local verification:
 - `npm run smoke:local`: deterministic local gateway smoke passed locally.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
 - `npm run smoke:demo-browser`: deterministic local browser-wrapper smoke passed locally.
+- `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
 - public repo scaffold committed and pushed.
@@ -119,6 +120,7 @@ docs/
   reviewer-checklist.md
   sdk.md
   threat-model.md
+  testnet-readiness.md
 examples/
   nextjs-api-route/
   node-backend/
@@ -209,6 +211,7 @@ See:
 - `docs/production-hardening.md`
 - `docs/security/sponsor-wallet.md`
 - `docs/security/secrets.md`
+- `docs/testnet-readiness.md`
 
 ## Open-source vs future managed service
 

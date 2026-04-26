@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "testnet readiness preflight",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "docs/quickstart.md",
+    "docs/security/secrets.md",
+    "docs/security/sponsor-wallet.md",
+    "apps/policy-gateway-service/src/config.ts"
+  ],
+  "ownedFiles": [
+    "apps/policy-gateway-service/src/readiness.ts",
+    "apps/policy-gateway-service/src/readiness.test.ts",
+    "scripts/check-testnet-readiness.ts",
+    "docs/testnet-readiness.md",
+    "docs/quickstart.md",
+    "docs/security/secrets.md",
+    "README.md",
+    "package.json"
+  ],
+  "noTouch": [
+    "private/prototype Gas Station code",
+    "real sponsor keys or .env files",
+    "Docker/deployment services",
+    "live IOTA RPC calls",
+    "dashboard implementation",
+    "billing or Stripe surfaces"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "readiness validator CLI",
+      "policy gateway env/config parser",
+      "grant:check script"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test apps/policy-gateway-service/src/readiness.test.ts",
+      "npm run readiness:testnet:example",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m1-testnet-readiness-preflight.json"
+    ],
+    "browser": "skip: local CLI/config preflight slice; browser UI not in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "browser": {
+    "required": false,
+    "reason": "The slice is a local CLI/config preflight and documentation boundary; it does not add UI behavior."
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the work is limited to a local readiness validator, CLI wiring, docs, and existing policy gateway config parsing; it avoids live network calls, deployments, sponsor keys, Docker, and private prototype code",
+  "knownFailures": [],
+  "notes": "Adds a local-only testnet-readiness preflight that validates required env/config shape, rejects placeholders for real testnet attempts, validates .env.example placeholders deterministically, and avoids printing secret values."
+}

@@ -13,6 +13,7 @@ npm run typecheck
 npm run smoke:local
 npm run smoke:demo-dapp
 npm run smoke:demo-browser
+npm run readiness:testnet:example
 ```
 
 ## Local policy gateway smoke path
@@ -154,7 +155,25 @@ Then open `http://127.0.0.1:8788`. The browser wrapper binds to loopback hosts o
 
 The demo dApp smoke paths use placeholder transaction bytes/signatures and do not require Docker, sponsor keys, testnet funds, or real network calls.
 
-### 8. Proxy an allowed reserve request manually
+### 8. Run the local testnet-readiness preflight
+
+Before replacing the local/mock upstream with real testnet sponsor credentials, run the local-only readiness checks:
+
+```bash
+npm run readiness:testnet:example
+```
+
+That command verifies `.env.example` still documents placeholders and required keys without using any real secrets.
+
+After copying `.env.example` to `.env` and replacing values locally, run:
+
+```bash
+npm run readiness:testnet
+```
+
+The preflight does not contact IOTA RPC, a Gas Station upstream, Docker, Redis, or any hosted service. It only validates local config shape, fails closed on placeholders/local demo defaults, loads the policy config, checks a non-empty package allowlist, and keeps secret values out of output. See `docs/testnet-readiness.md`.
+
+### 9. Proxy an allowed reserve request manually
 
 If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 
