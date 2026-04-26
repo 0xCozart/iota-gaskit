@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "Node backend SDK example",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "README.md",
+    "docs/sdk.md",
+    "examples/node-backend/README.md",
+    "packages/sdk/src/types.ts",
+    "packages/sdk/src/client.ts"
+  ],
+  "ownedFiles": [
+    "examples/node-backend/gaskit-backend.ts",
+    "examples/node-backend/gaskit-backend.test.ts",
+    "examples/node-backend/README.md",
+    "scripts/package-scripts.test.ts",
+    "package.json",
+    "tsconfig.json",
+    "tmp/apex-workflow/m3-node-backend-example.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "browser demo UI behavior",
+    "SDK runtime internals beyond typed imports"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "examples/node-backend",
+      "packages/sdk/src/types.ts",
+      "package.json",
+      "tsconfig.json",
+      "scripts/package-scripts.test.ts"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test examples/node-backend/gaskit-backend.test.ts",
+      "node --import tsx --test scripts/package-scripts.test.ts examples/node-backend/gaskit-backend.test.ts",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m3-node-backend-example.json"
+    ],
+    "browser": "skip: framework-neutral Node backend example; browser UI not in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the slice is limited to one Node backend example, its regression tests, root test/typecheck inclusion, and docs; it uses fake SDK clients and makes no network, deployment, or secret-bearing changes",
+  "knownFailures": [],
+  "notes": "Adds a minimal framework-neutral backend example showing how to call the SDK from server-side code while returning only safe reservation/execution fields to frontend callers."
+}
