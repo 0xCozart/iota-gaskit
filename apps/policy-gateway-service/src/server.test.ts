@@ -569,6 +569,62 @@ test("policy simulation requires valid app credentials and JSON object bodies", 
   assert.equal(fixture.upstream.requests.length, 0);
 });
 
+test("policy simulation rejects malformed policy field shapes before evaluating", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+
+  for (const body of [
+    { gas_budget: "999999999", wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" },
+    { gas_budget: -1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" },
+    { gas_budget: 1, wallet_address: 123, package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" },
+    { gas_budget: 1, wallet_address: "0xWALLET", package_id: ["0xDEMO_PACKAGE"], function_name: "mint_badge" },
+    { gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: { name: "mint_badge" } },
+  ]) {
+    const response = await fetch(`${fixture.gatewayBaseUrl}/v1/policy/simulate`, {
+      method: "POST",
+      headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const responseBody = await response.json();
+    assert.equal(response.status, 400);
+    assert.equal(responseBody.error, "BadRequest");
+  }
+
+  assert.equal(fixture.upstream.requests.length, 0);
+});
+
+test("reserve rejects malformed gas budgets before quota mutation or upstream proxy", async () => {
+  const fixture = await startGateway({
+    apps: {
+      "demo-dapp": {
+        apiKey: "local-dev-demo-key",
+        policy: { ...demoPolicy, dailyBudgetNanos: 1 },
+      },
+    },
+  });
+  after(() => fixture.close());
+
+  const invalidReserve = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: -1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const invalidReserveBody = await invalidReserve.json();
+  assert.equal(invalidReserve.status, 400);
+  assert.equal(invalidReserveBody.error, "BadRequest");
+  assert.equal(fixture.upstream.requests.length, 0);
+
+  const validReserve = await fetch(`${fixture.gatewayBaseUrl}/v1/reserve_gas`, {
+    method: "POST",
+    headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+    body: JSON.stringify({ gas_budget: 1, wallet_address: "0xWALLET", package_id: "0xDEMO_PACKAGE", function_name: "mint_badge" }),
+  });
+  const validReserveBody = await validReserve.json();
+  assert.equal(validReserve.status, 200);
+  assert.equal(validReserveBody.result.reservation_id, "reservation-1");
+  assert.equal(fixture.upstream.requests.length, 1);
+});
+
 test("policy simulation reads current quota counters without mutating them", async () => {
   const oneUsePolicy = { ...demoPolicy, dailyRequestLimit: 1 };
   const fixture = await startGateway({

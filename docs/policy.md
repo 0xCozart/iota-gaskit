@@ -45,7 +45,7 @@ Rejected simulations also return HTTP 200 with a machine-readable reason, so cli
 }
 ```
 
-Missing or invalid app credentials still fail closed with the usual auth statuses and reason codes. Malformed JSON and non-object bodies return `BadRequest` before policy evaluation. Keep simulation output secret-free; it should contain only policy decision data, not app keys, bearer tokens, raw request bodies, transaction bytes, signatures, or upstream responses.
+Missing or invalid app credentials still fail closed with the usual auth statuses and reason codes. Malformed JSON, non-object bodies, malformed policy field types, and non-positive `gas_budget` values return `BadRequest` before policy evaluation. Keep simulation output secret-free; it should contain only policy decision data, not app keys, bearer tokens, raw request bodies, transaction bytes, signatures, or upstream responses.
 
 ## Standard reason codes
 

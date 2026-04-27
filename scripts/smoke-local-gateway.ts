@@ -151,6 +151,14 @@ async function main(): Promise<void> {
     assert.equal(simulatedRejected.status, 200);
     assert.equal(simulatedRejectedBody.allowed, false);
     assert.equal(simulatedRejectedBody.reasonCode, "PACKAGE_NOT_ALLOWED");
+    const simulatedMalformed = await fetch(`${gatewayBaseUrl}/v1/policy/simulate`, {
+      method: "POST",
+      headers: { authorization: "Bearer local-dev-demo-key", "content-type": "application/json" },
+      body: JSON.stringify({ gas_budget: -1, wallet_address: "0xSMOKE_WALLET", package_id: "0xYOUR_DEMO_PACKAGE_ID", function_name: "mint_badge" }),
+    });
+    const simulatedMalformedBody = await simulatedMalformed.json();
+    assert.equal(simulatedMalformed.status, 400);
+    assert.equal(simulatedMalformedBody.error, "BadRequest");
     assert.equal(upstream.requests.length, 0);
     assert.equal(events.length, 4);
     console.log("ok: policy simulation evaluates locally without upstream calls");

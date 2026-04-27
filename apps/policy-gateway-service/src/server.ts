@@ -118,6 +118,24 @@ function stringField(record: JsonRecord, key: string): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
+function hasOwn(record: JsonRecord, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(record, key);
+}
+
+function requestPositiveNumberField(record: JsonRecord, key: string): number | undefined {
+  if (!hasOwn(record, key)) return undefined;
+  const value = record[key];
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
+  throw new HttpRequestError(400, { error: "BadRequest", message: `${key} must be a positive finite number when provided.` });
+}
+
+function requestStringField(record: JsonRecord, key: string): string | undefined {
+  if (!hasOwn(record, key)) return undefined;
+  const value = record[key];
+  if (typeof value === "string" && value.trim().length > 0) return value;
+  throw new HttpRequestError(400, { error: "BadRequest", message: `${key} must be a non-empty string when provided.` });
+}
+
 function parseBearer(value: string | string[] | undefined): string | undefined {
   const header = Array.isArray(value) ? value[0] : value;
   if (!header) return undefined;
@@ -303,10 +321,10 @@ function applyUsageCounters(counters: UsageCounters, appId: string, walletAddres
 }
 
 function policyContextFromBody(appId: string, counters: UsageCounters, body: JsonRecord): SponsorshipRequestContext {
-  const gasBudget = numberField(body, "gas_budget");
-  const walletAddress = stringField(body, "wallet_address");
-  const packageId = stringField(body, "package_id");
-  const functionName = stringField(body, "function_name");
+  const gasBudget = requestPositiveNumberField(body, "gas_budget");
+  const walletAddress = requestStringField(body, "wallet_address");
+  const packageId = requestStringField(body, "package_id");
+  const functionName = requestStringField(body, "function_name");
 
   return {
     appId,

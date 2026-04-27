@@ -96,7 +96,7 @@ Expected result: HTTP 401 with reason code `AUTH_MISSING`.
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
-  -H 'authorization: Bearer local-dev-demo-key' \
+  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"package_id":"0xNOT_ALLOWED","function_name":"mint_badge"}'
 ```
@@ -110,12 +110,12 @@ Use the simulation endpoint to preflight policy decisions without touching IOTA 
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/policy/simulate \
-  -H 'authorization: Bearer local-...key' \
+  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0xYOUR_DEMO_PACKAGE_ID","function_name":"mint_badge"}'
 ```
 
-Expected allowed result: HTTP 200 with `{ "allowed": true }`. Policy rejections also return HTTP 200 as decision data, for example `{"allowed":false,"reasonCode":"PACKAGE_NOT_ALLOWED",...}`. Missing or invalid app credentials still return auth failures.
+Expected allowed result: HTTP 200 with `{ "allowed": true }`. Policy rejections also return HTTP 200 as decision data, for example `{"allowed":false,"reasonCode":"PACKAGE_NOT_ALLOWED",...}`. Missing or invalid app credentials still return auth failures. Malformed JSON, non-object bodies, and malformed policy field shapes such as non-numeric or non-positive `gas_budget` values return `BadRequest` before policy evaluation.
 
 ### 7. Run the one-command local smoke
 
@@ -194,7 +194,7 @@ If you are running a local IOTA Gas Station upstream at `GAS_STATION_URL`, call:
 ```bash
 curl -i \
   -X POST http://127.0.0.1:8787/v1/reserve_gas \
-  -H 'authorization: Bearer local-dev-demo-key' \
+  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
   -H 'content-type: application/json' \
   -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0xYOUR_DEMO_PACKAGE_ID","function_name":"mint_badge"}'
 ```
