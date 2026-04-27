@@ -4,6 +4,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { createGasKitClient, GasKitAuthError, GasKitPolicyError } from "../packages/sdk/src/index.js";
 import { loadGatewayConfigFromEnv } from "../apps/policy-gateway-service/src/config.js";
 import { createGatewayServer, type GatewayEvent } from "../apps/policy-gateway-service/src/server.js";
+import { createGatewayUsageReadModel } from "../apps/policy-gateway-service/src/usage.js";
 
 interface ObservedRequest {
   method?: string;
@@ -79,6 +80,7 @@ async function main(): Promise<void> {
   try {
     const upstreamBaseUrl = await listen(upstream.server);
     const events: GatewayEvent[] = [];
+    const usage = createGatewayUsageReadModel({ maxRecentEvents: 10 });
     const config = await loadGatewayConfigFromEnv({
       GASKIT_POLICY_PATH: "examples/policies/demo-dapp.yaml",
       GASKIT_DEMO_APP_KEY: "local-dev-demo-key",
@@ -90,6 +92,7 @@ async function main(): Promise<void> {
       ...config,
       eventSink: (event) => {
         events.push(event);
+        usage.record(event);
       },
     });
     const gatewayBaseUrl = await listen(gateway);
@@ -187,6 +190,37 @@ async function main(): Promise<void> {
     assert.equal(eventOutput.includes("local-smoke-token"), false);
     assert.equal(eventOutput.includes("smoke-signature"), false);
     console.log("ok: structured gateway events are sanitized");
+
+    const usageSnapshot = usage.snapshot();
+    assert.deepEqual(usageSnapshot.totals.byOperation, { reserve: 5, execute: 1 });
+    assert.deepEqual(usageSnapshot.totals.byOutcome, { allowed: 2, rejected: 4, upstream_failed: 0 });
+    assert.deepEqual(usageSnapshot.totals.byReasonCode, {
+      AUTH_INVALID: 1,
+      AUTH_MISSING: 1,
+      FUNCTION_NOT_ALLOWED: 1,
+      PACKAGE_NOT_ALLOWED: 1,
+    });
+    assert.equal(usageSnapshot.byAppId["demo-dapp"]?.events, 4);
+    assert.equal(usageSnapshot.byAppId.unknown?.events, 2);
+    assert.equal(usageSnapshot.byWalletAddress["0xSMOKE_WALLET"]?.events, 2);
+    assert.equal(usageSnapshot.byWalletAddress.unknown?.events, 4);
+    assert.equal(usageSnapshot.totals.gasBudgetReserved, 1);
+    assert.deepEqual(
+      usageSnapshot.recentEvents.map((event) => [event.operation, event.outcome, event.reasonCode]),
+      [
+        ["reserve", "rejected", "AUTH_MISSING"],
+        ["reserve", "rejected", "AUTH_INVALID"],
+        ["reserve", "rejected", "PACKAGE_NOT_ALLOWED"],
+        ["reserve", "rejected", "FUNCTION_NOT_ALLOWED"],
+        ["reserve", "allowed", undefined],
+        ["execute", "allowed", undefined],
+      ],
+    );
+    const usageOutput = JSON.stringify(usageSnapshot);
+    assert.equal(usageOutput.includes("local-dev-demo-key"), false);
+    assert.equal(usageOutput.includes("local-smoke-token"), false);
+    assert.equal(usageOutput.includes("smoke-signature"), false);
+    console.log("ok: local usage read model aggregates sanitized events");
 
     console.log("IOTA GasKit local gateway smoke passed");
   } finally {

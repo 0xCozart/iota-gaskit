@@ -56,6 +56,30 @@ If the event sink throws or rejects, the gateway ignores that failure and contin
 
 Malformed JSON, non-object JSON bodies, and oversized payloads are rejected before sponsorship policy evaluation. Those gateway-level parse failures are intentionally outside the decision-event contract in this local slice; a future abuse-monitoring slice can add separate request-error telemetry without including raw bodies.
 
+## Local usage read model
+
+`createGatewayUsageReadModel()` consumes the same sanitized `GatewayEvent` objects and produces a deterministic in-memory snapshot for local smoke tests and future dashboard work:
+
+```ts
+import { createGatewayUsageReadModel } from "./usage.js";
+
+const usage = createGatewayUsageReadModel({ maxRecentEvents: 100 });
+const server = createGatewayServer({
+  apps,
+  upstreamBaseUrl,
+  upstreamBearerToken,
+  eventSink: (event) => {
+    usage.record(event);
+  },
+});
+
+const snapshot = usage.snapshot();
+```
+
+The snapshot includes total event counts by operation, outcome, reason code, app ID, and wallet address, plus a bounded `recentEvents` list. Missing app or wallet metadata is grouped under `unknown`. The read model also sums gas budget for allowed reserve events as a local usage signal.
+
+The read model is intentionally not durable storage, an operator HTTP endpoint, or dashboard authentication. It is a pure local foundation for later usage-store, metrics, dashboard, or CSV-export slices. It copies only the allowlisted event fields and does not store extra fields if a caller passes a wider object.
+
 ## Current verification
 
 `npm run smoke:local` asserts that the gateway emits sanitized events for:
@@ -67,7 +91,7 @@ Malformed JSON, non-object JSON bodies, and oversized payloads are rejected befo
 - allowed reserve;
 - allowed execute.
 
-`apps/policy-gateway-service/src/events.test.ts` also covers upstream failure events and event sink failure isolation.
+`apps/policy-gateway-service/src/events.test.ts` also covers upstream failure events and event sink failure isolation. `apps/policy-gateway-service/src/usage.test.ts` covers event aggregation, missing metadata grouping, bounded recent events, and read-model field allowlisting. `npm run smoke:local` feeds the emitted local smoke events into the usage read model and asserts the deterministic snapshot does not contain app API keys, bearer tokens, or user signatures.
 
 ## Production direction
 
