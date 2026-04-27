@@ -62,5 +62,5 @@
   },
   "downshiftProof": "route-local because the slice is limited to one Node backend example, its regression tests, root test/typecheck inclusion, and docs; it uses fake SDK clients and makes no network, deployment, or secret-bearing changes",
   "knownFailures": [],
-  "notes": "Adds a minimal framework-neutral backend example showing how to call the SDK from server-side code while returning only safe reservation/execution fields to frontend callers."
+  "notes": "Adds a minimal framework-neutral backend example showing how to call the SDK from server-side code while returning only safe reservation/execution fields and sanitized error responses to frontend callers. Audit hardening keeps optional reserveDurationSecs forwarding aligned with SDK types and maps SDK policy/auth/gateway failures without exposing raw upstream bodies or thrown SDK messages."
 }

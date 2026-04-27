@@ -20,6 +20,7 @@ const reservation = await handlers.reserve({
   packageId: "0xYOUR_DEMO_PACKAGE_ID",
   functionName: "mint_badge",
   gasBudget: 50_000_000,
+  reserveDurationSecs: 30,
 });
 
 const executed = await handlers.execute({
@@ -30,7 +31,7 @@ const executed = await handlers.execute({
 });
 ```
 
-The safe response bodies include only the reservation identifiers, optional sponsor address, and execution digest. They intentionally omit:
+The safe response bodies include only the reservation identifiers, optional sponsor address, execution digest, and sanitized error codes/messages. The handlers map SDK policy/auth/gateway failures to frontend-safe error responses without returning thrown SDK messages or raw upstream error bodies. They intentionally omit:
 
 - app API keys and bearer tokens;
 - raw upstream bodies;

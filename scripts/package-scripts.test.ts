@@ -22,13 +22,18 @@ test("local smoke script builds workspace packages before running gateway smoke"
   );
 });
 
-test("root npm test includes script and example regression tests", () => {
+test("root npm test includes script, example, package, and app regression tests", () => {
   const npmTest = packageJson.scripts?.["test"] ?? "";
 
   assert.match(npmTest, /scripts\/\*\.test\.ts/);
   assert.match(npmTest, /examples\/\*\*\/\*\.test\.ts/);
+  assert.match(npmTest, /packages\/\*\/src\/\*\.test\.ts/);
+  assert.match(npmTest, /apps\/\*\/src\/\*\.test\.ts/);
 });
 
-test("root typecheck includes checked example source", () => {
+test("root typecheck includes package, app, script, and example source", () => {
+  assert.ok(tsconfig.include?.includes("packages/**/*.ts"));
+  assert.ok(tsconfig.include?.includes("apps/**/*.ts"));
+  assert.ok(tsconfig.include?.includes("scripts/**/*.ts"));
   assert.ok(tsconfig.include?.includes("examples/**/*.ts"));
 });

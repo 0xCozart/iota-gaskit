@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createGasKitBackendHandlers } from "./gaskit-backend.js";
+import { GasKitAuthError, GasKitError, GasKitPolicyError } from "../../packages/sdk/src/index.js";
 import type {
   ExecuteSponsoredTransactionRequest,
   ExecuteSponsoredTransactionResponse,
@@ -38,6 +39,7 @@ test("reserve handler uses the server-owned SDK client and returns only safe res
     packageId: "0xDEMO_PACKAGE",
     functionName: "mint_badge",
     gasBudget: 50_000_000,
+    reserveDurationSecs: 30,
   });
 
   assert.deepEqual(reserveCalls, [
@@ -46,6 +48,7 @@ test("reserve handler uses the server-owned SDK client and returns only safe res
       packageId: "0xDEMO_PACKAGE",
       functionName: "mint_badge",
       gasBudget: 50_000_000,
+      reserveDurationSecs: 30,
     },
   ]);
   assert.equal(response.status, 200);
@@ -100,4 +103,73 @@ test("execute handler omits transaction bytes, user signatures, and raw upstream
     asJson(response.body),
     /raw-bytes-that-should-stay-server-side|raw-signature-that-should-stay-server-side|client-transaction-bytes|client-user-signature/i,
   );
+});
+
+test("handlers map SDK errors to safe frontend responses without raw upstream bodies", async () => {
+  const handlers = createGasKitBackendHandlers({
+    client: {
+      async reserveGas(): Promise<ReserveGasResponse> {
+        throw new GasKitPolicyError("raw upstream policy body leaked", "PACKAGE_NOT_ALLOWED", 400, {
+          apiKey: "secret-app-key",
+          bearerToken: "secret-bearer-token",
+          raw: "raw-upstream-error-body",
+        });
+      },
+      async executeSponsoredTransaction(): Promise<ExecuteSponsoredTransactionResponse> {
+        throw new GasKitAuthError("raw upstream auth body leaked", 401, {
+          apiKey: "secret-app-key",
+          bearerToken: "secret-bearer-token",
+        });
+      },
+    },
+  });
+
+  const reserve = await handlers.reserve({ gasBudget: 1, packageId: "0xNOT_ALLOWED", functionName: "mint_badge" });
+  const execute = await handlers.execute({
+    reservationId: "reservation-1",
+    gasKitTransactionId: "gaskit-1",
+    transactionBytes: "client-transaction-bytes",
+    userSignature: "client-user-signature",
+  });
+
+  assert.deepEqual(reserve.body, {
+    error: "POLICY_REJECTED",
+    message: "Request rejected by GasKit policy.",
+    reasonCode: "PACKAGE_NOT_ALLOWED",
+  });
+  assert.equal(reserve.status, 400);
+  assert.deepEqual(execute.body, {
+    error: "AUTH_FAILED",
+    message: "GasKit authentication failed.",
+  });
+  assert.equal(execute.status, 401);
+  assert.doesNotMatch(
+    asJson([reserve.body, execute.body]),
+    /secret|raw upstream|raw-upstream|transaction-bytes|user-signature|apiKey|bearer/i,
+  );
+});
+
+test("handlers map non-policy SDK errors to generic safe frontend responses", async () => {
+  const handlers = createGasKitBackendHandlers({
+    client: {
+      async reserveGas(): Promise<ReserveGasResponse> {
+        throw new GasKitError("raw upstream gateway body leaked", 502, {
+          transactionBytes: "secret-transaction-bytes",
+          userSignature: "secret-user-signature",
+        });
+      },
+      async executeSponsoredTransaction(): Promise<ExecuteSponsoredTransactionResponse> {
+        throw new Error("execute should not be called by reserve handler");
+      },
+    },
+  });
+
+  const response = await handlers.reserve({ gasBudget: 1 });
+
+  assert.equal(response.status, 502);
+  assert.deepEqual(response.body, {
+    error: "GASKIT_REQUEST_FAILED",
+    message: "GasKit request failed.",
+  });
+  assert.doesNotMatch(asJson(response.body), /secret|raw upstream|transaction-bytes|user-signature/i);
 });
