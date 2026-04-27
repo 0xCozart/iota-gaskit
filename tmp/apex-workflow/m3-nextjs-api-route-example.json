@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "Next.js API route SDK example",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "README.md",
+    "docs/sdk.md",
+    "examples/nextjs-api-route/README.md",
+    "examples/node-backend/gaskit-backend.ts",
+    "packages/sdk/src/types.ts",
+    "packages/sdk/src/errors.ts"
+  ],
+  "ownedFiles": [
+    "examples/nextjs-api-route/gaskit-route.ts",
+    "examples/nextjs-api-route/gaskit-route.test.ts",
+    "examples/nextjs-api-route/README.md",
+    "tmp/apex-workflow/m3-nextjs-api-route-example.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "browser demo UI behavior",
+    "SDK runtime internals beyond typed imports"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search",
+    "impacts": [
+      "examples/nextjs-api-route",
+      "examples/node-backend/gaskit-backend.ts",
+      "packages/sdk/src/types.ts",
+      "packages/sdk/src/errors.ts"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test examples/nextjs-api-route/gaskit-route.test.ts",
+      "npm test",
+      "npm run typecheck",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m3-nextjs-api-route-example.json"
+    ],
+    "browser": "skip: Next.js-compatible route helper uses standard Request/Response tests; no browser UI in scope",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because the slice is limited to a deterministic Next.js API route example, tests, docs, and manifest; it uses fake SDK clients and standard Request/Response without real network, deployment, Docker, sponsor keys, or secrets",
+  "knownFailures": [
+    "Initial route test failed with ERR_MODULE_NOT_FOUND before gaskit-route.ts existed; expected TDD red state."
+  ],
+  "notes": "Adds a maintained Next.js-compatible API route example for reserve/execute endpoints. The helper keeps credentials server-side, rejects malformed request bodies before SDK calls, forwards only allowlisted SDK fields, and returns only safe reservation/execution/error fields."
+}
