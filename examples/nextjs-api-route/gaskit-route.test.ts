@@ -147,10 +147,63 @@ test("routes fail closed on malformed bodies before calling the SDK client", asy
   );
   const arrayBody = await routes.execute(postJson("/api/gaskit/execute", []));
   const wrongMethod = await routes.reserve(new Request("http://localhost/api/gaskit/reserve", { method: "GET" }));
+  const wrongContentType = await routes.reserve(
+    new Request("http://localhost/api/gaskit/reserve", {
+      method: "POST",
+      headers: { "content-type": "text/plain" },
+      body: JSON.stringify({ gasBudget: 1 }),
+    }),
+  );
 
   assert.equal(invalidJson.status, 400);
   assert.equal(arrayBody.status, 400);
   assert.equal(wrongMethod.status, 405);
+  assert.equal(wrongMethod.headers.get("allow"), "POST");
+  assert.equal(wrongContentType.status, 415);
+  assert.equal(calls, 0);
+});
+
+test("routes reject invalid SDK request field shapes before calling the SDK client", async () => {
+  let calls = 0;
+  const routes = createGasKitNextApiRoutes({
+    client: {
+      async reserveGas(): Promise<ReserveGasResponse> {
+        calls += 1;
+        throw new Error("reserve should not be called");
+      },
+      async executeSponsoredTransaction(): Promise<ExecuteSponsoredTransactionResponse> {
+        calls += 1;
+        throw new Error("execute should not be called");
+      },
+    },
+  });
+
+  const zeroGas = await routes.reserve(postJson("/api/gaskit/reserve", { gasBudget: 0 }));
+  const fractionalGas = await routes.reserve(postJson("/api/gaskit/reserve", { gasBudget: 1.5 }));
+  const wrongPackageType = await routes.reserve(postJson("/api/gaskit/reserve", { gasBudget: 1, packageId: 123 }));
+  const wrongDurationType = await routes.reserve(
+    postJson("/api/gaskit/reserve", { gasBudget: 1, reserveDurationSecs: "30" }),
+  );
+  const emptyExecuteId = await routes.execute(
+    postJson("/api/gaskit/execute", {
+      reservationId: "",
+      gasKitTransactionId: "gaskit-1",
+      transactionBytes: "client-transaction-bytes",
+      userSignature: "client-user-signature",
+    }),
+  );
+  const blankSignature = await routes.execute(
+    postJson("/api/gaskit/execute", {
+      reservationId: "reservation-1",
+      gasKitTransactionId: "gaskit-1",
+      transactionBytes: "client-transaction-bytes",
+      userSignature: "   ",
+    }),
+  );
+
+  for (const response of [zeroGas, fractionalGas, wrongPackageType, wrongDurationType, emptyExecuteId, blankSignature]) {
+    assert.equal(response.status, 400);
+  }
   assert.equal(calls, 0);
 });
 

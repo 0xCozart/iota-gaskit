@@ -17,24 +17,28 @@ export interface GasKitNextApiRoutes {
 }
 
 interface BadRequestBody {
-  error: "BAD_REQUEST" | "METHOD_NOT_ALLOWED";
+  error: "BAD_REQUEST" | "METHOD_NOT_ALLOWED" | "UNSUPPORTED_MEDIA_TYPE";
   message: string;
 }
 
 type RouteResponseBody<TBody extends object> = TBody | GasKitExampleErrorBody | BadRequestBody;
 
-function jsonResponse<TBody extends object>(status: number, body: TBody): Response {
+function jsonResponse<TBody extends object>(status: number, body: TBody, headers: HeadersInit = {}): Response {
   return Response.json(body, {
     status,
-    headers: { "cache-control": "no-store" },
+    headers: { "cache-control": "no-store", ...headers },
   });
 }
 
 function methodNotAllowed(): Response {
-  return jsonResponse(405, {
-    error: "METHOD_NOT_ALLOWED",
-    message: "Use POST for this GasKit endpoint.",
-  });
+  return jsonResponse(
+    405,
+    {
+      error: "METHOD_NOT_ALLOWED",
+      message: "Use POST for this GasKit endpoint.",
+    },
+    { allow: "POST" },
+  );
 }
 
 function badRequest(message: string): Response {
@@ -44,7 +48,18 @@ function badRequest(message: string): Response {
   });
 }
 
+function unsupportedMediaType(): Response {
+  return jsonResponse(415, {
+    error: "UNSUPPORTED_MEDIA_TYPE",
+    message: "Request content-type must be application/json.",
+  });
+}
+
 async function readObjectBody(request: Request): Promise<Record<string, unknown> | Response> {
+  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+    return unsupportedMediaType();
+  }
+
   let value: unknown;
 
   try {
@@ -60,22 +75,36 @@ async function readObjectBody(request: Request): Promise<Record<string, unknown>
   return value as Record<string, unknown>;
 }
 
-function optionalString(value: unknown): string | undefined {
-  return typeof value === "string" ? value : undefined;
+function optionalStringField(body: Record<string, unknown>, key: string): string | undefined | Response {
+  const value = body[key];
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return badRequest(`${key} must be a non-empty string.`);
+  }
+  return value;
 }
 
-function optionalNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+function optionalPositiveIntegerField(body: Record<string, unknown>, key: string): number | undefined | Response {
+  const value = body[key];
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value <= 0) {
+    return badRequest(`${key} must be a positive safe integer.`);
+  }
+  return value;
 }
 
 function requiredString(body: Record<string, unknown>, key: string): string | Response {
-  const value = optionalString(body[key]);
-  return value === undefined ? badRequest(`${key} must be a string.`) : value;
+  const value = optionalStringField(body, key);
+  return value === undefined ? badRequest(`${key} must be a non-empty string.`) : value;
 }
 
-function requiredNumber(body: Record<string, unknown>, key: string): number | Response {
-  const value = optionalNumber(body[key]);
-  return value === undefined ? badRequest(`${key} must be a finite number.`) : value;
+function requiredPositiveInteger(body: Record<string, unknown>, key: string): number | Response {
+  const value = optionalPositiveIntegerField(body, key);
+  return value === undefined ? badRequest(`${key} must be a positive safe integer.`) : value;
 }
 
 function asResponse<TBody extends object>(result: GasKitExampleResult<TBody>): Response {
@@ -83,17 +112,37 @@ function asResponse<TBody extends object>(result: GasKitExampleResult<TBody>): R
 }
 
 function reserveInputFromBody(body: Record<string, unknown>): ReserveGasRequest | Response {
-  const gasBudget = requiredNumber(body, "gasBudget");
+  const gasBudget = requiredPositiveInteger(body, "gasBudget");
   if (gasBudget instanceof Response) {
     return gasBudget;
   }
 
+  const reserveDurationSecs = optionalPositiveIntegerField(body, "reserveDurationSecs");
+  if (reserveDurationSecs instanceof Response) {
+    return reserveDurationSecs;
+  }
+
+  const walletAddress = optionalStringField(body, "walletAddress");
+  if (walletAddress instanceof Response) {
+    return walletAddress;
+  }
+
+  const packageId = optionalStringField(body, "packageId");
+  if (packageId instanceof Response) {
+    return packageId;
+  }
+
+  const functionName = optionalStringField(body, "functionName");
+  if (functionName instanceof Response) {
+    return functionName;
+  }
+
   return {
     gasBudget,
-    reserveDurationSecs: optionalNumber(body.reserveDurationSecs),
-    walletAddress: optionalString(body.walletAddress),
-    packageId: optionalString(body.packageId),
-    functionName: optionalString(body.functionName),
+    reserveDurationSecs,
+    walletAddress,
+    packageId,
+    functionName,
   };
 }
 

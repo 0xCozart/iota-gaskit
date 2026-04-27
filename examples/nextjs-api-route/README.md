@@ -6,7 +6,17 @@ The maintained `gaskit-route.ts` file is framework-light: it uses the standard `
 
 ## App Router usage
 
-Create one route file for reserve after copying `gaskit-route.ts` into a server-only helper path such as `app/api/gaskit/_lib/gaskit-route.ts`:
+Create one route file for reserve after copying both maintained helpers into a server-only helper path:
+
+- `examples/nextjs-api-route/gaskit-route.ts` -> `app/api/gaskit/_lib/gaskit-route.ts`
+- `examples/node-backend/gaskit-backend.ts` -> `app/api/gaskit/_lib/gaskit-backend.ts`
+
+Those source files use repo-local imports so they can be tested in this monorepo. In an app, update the copied helper imports before running Next.js:
+
+- in `gaskit-route.ts`, import SDK types from `@iota-gaskit/sdk` and import `createGasKitBackendHandlers` from `./gaskit-backend.js`;
+- in `gaskit-backend.ts`, import SDK client/errors/types from `@iota-gaskit/sdk`; keep or replace the small policy reason-code allowlist with your installed GasKit shared type package if your app depends on it.
+
+Then create the reserve route file:
 
 ```ts
 // app/api/gaskit/reserve/route.ts
@@ -46,10 +56,12 @@ Your real app should keep `GASKIT_DEMO_APP_KEY` on the server. Browser callers s
 
 The route helpers:
 
-- accept only `POST`;
-- reject malformed JSON, arrays, and primitive request bodies before calling the SDK client;
+- accept only `POST` and return `Allow: POST` for other methods;
+- require JSON requests with an `application/json` content type;
+- reject malformed JSON, arrays, primitive request bodies, empty required strings, invalid numeric fields, and present-but-wrong-type optional fields before calling the SDK client;
 - forward only the allowlisted SDK request fields;
 - return only reservation IDs, optional sponsor address, execution digest, and sanitized error codes/messages;
+- forward only known GasKit policy reason codes in error responses;
 - omit app API keys, bearer tokens, raw upstream bodies, gas coin internals, transaction bytes, and user signatures from responses.
 
 Run the example tests from the repo root:

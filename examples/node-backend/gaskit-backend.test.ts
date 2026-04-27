@@ -173,3 +173,27 @@ test("handlers map non-policy SDK errors to generic safe frontend responses", as
   });
   assert.doesNotMatch(asJson(response.body), /secret|raw upstream|transaction-bytes|user-signature/i);
 });
+
+test("handlers omit unknown policy reason codes from safe frontend responses", async () => {
+  const handlers = createGasKitBackendHandlers({
+    client: {
+      async reserveGas(): Promise<ReserveGasResponse> {
+        throw new GasKitPolicyError("raw upstream policy body leaked", "secret-app-key-raw-body", 400, {
+          raw: "raw-upstream-error-body",
+        });
+      },
+      async executeSponsoredTransaction(): Promise<ExecuteSponsoredTransactionResponse> {
+        throw new Error("execute should not be called by reserve handler");
+      },
+    },
+  });
+
+  const response = await handlers.reserve({ gasBudget: 1 });
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(response.body, {
+    error: "POLICY_REJECTED",
+    message: "Request rejected by GasKit policy.",
+  });
+  assert.doesNotMatch(asJson(response.body), /secret|raw-upstream|raw upstream/i);
+});

@@ -7,6 +7,7 @@ import {
   type ReserveGasRequest,
   type ReserveGasResponse,
 } from "../../packages/sdk/src/index.js";
+import { POLICY_REASON_CODES } from "../../packages/shared-types/src/policy.js";
 
 export interface GasKitBackendClient {
   reserveGas(request: ReserveGasRequest): Promise<ReserveGasResponse>;
@@ -56,6 +57,12 @@ function statusOrFallback(status: number | undefined, fallback: number): number 
   return typeof status === "number" && status >= 400 && status <= 599 ? status : fallback;
 }
 
+function knownPolicyReasonCode(reasonCode: string | undefined): string | undefined {
+  return typeof reasonCode === "string" && (POLICY_REASON_CODES as readonly string[]).includes(reasonCode)
+    ? reasonCode
+    : undefined;
+}
+
 function safeErrorResponse(error: unknown): GasKitExampleResponse<GasKitExampleErrorBody> {
   if (error instanceof GasKitAuthError) {
     return {
@@ -68,12 +75,14 @@ function safeErrorResponse(error: unknown): GasKitExampleResponse<GasKitExampleE
   }
 
   if (error instanceof GasKitPolicyError) {
+    const reasonCode = knownPolicyReasonCode(error.reasonCode);
+
     return {
       status: statusOrFallback(error.status, 400),
       body: {
         error: "POLICY_REJECTED",
         message: "Request rejected by GasKit policy.",
-        ...(error.reasonCode === undefined ? {} : { reasonCode: error.reasonCode }),
+        ...(reasonCode === undefined ? {} : { reasonCode }),
       },
     };
   }

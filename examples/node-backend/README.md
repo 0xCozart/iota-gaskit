@@ -31,7 +31,7 @@ const executed = await handlers.execute({
 });
 ```
 
-The safe response bodies include only the reservation identifiers, optional sponsor address, execution digest, and sanitized error codes/messages. The handlers map SDK policy/auth/gateway failures to frontend-safe error responses without returning thrown SDK messages or raw upstream error bodies. They intentionally omit:
+The safe response bodies include only the reservation identifiers, optional sponsor address, execution digest, and sanitized error codes/messages. The handlers map SDK policy/auth/gateway failures to frontend-safe error responses without returning thrown SDK messages or raw upstream error bodies. Policy error responses forward only known GasKit policy reason codes and omit unknown upstream-provided reason strings. They intentionally omit:
 
 - app API keys and bearer tokens;
 - raw upstream bodies;
