@@ -140,6 +140,21 @@ test("readiness resolves relative policy paths from the provided cwd", async () 
   assert.ok(report.checks.some((check) => check.id === "policy.load" && check.status === "pass"));
 });
 
+test("readiness treats optional operator usage token as a secret when configured", async () => {
+  const report = await checkTestnetReadiness({
+    env: await validEnv({
+      GASKIT_USAGE_EVENT_STORE_PATH: "tmp/usage.jsonl",
+      GASKIT_OPERATOR_USAGE_TOKEN: "replace-with-local-operator-token",
+    }),
+  });
+
+  assert.equal(report.ok, false);
+  assert.ok(report.failures.some((failure) => failure.id === "GASKIT_OPERATOR_USAGE_TOKEN.value"));
+  const formatted = formatReadinessReport(report);
+  assert.ok(!formatted.includes("replace-with-local-operator-token"));
+  assert.ok(formatted.includes("GASKIT_OPERATOR_USAGE_TOKEN"));
+});
+
 test("readiness report formatting never prints secret values", async () => {
   const secret = "redacted-sentinel-value-that-must-not-print";
   const report = await checkTestnetReadiness({ env: await validEnv({ GAS_STATION_AUTH: secret }) });

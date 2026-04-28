@@ -8,7 +8,6 @@ import { createGasKitClient, GasKitAuthError, GasKitPolicyError } from "../packa
 import { loadGatewayConfigFromEnv } from "../apps/policy-gateway-service/src/config.js";
 import { createGatewayServer, type GatewayEvent } from "../apps/policy-gateway-service/src/server.js";
 import { createGatewayUsageReadModel } from "../apps/policy-gateway-service/src/usage.js";
-import { createFileGatewayUsageEventStore } from "../apps/policy-gateway-service/src/usage-store.js";
 
 interface ObservedRequest {
   method?: string;
@@ -87,12 +86,15 @@ async function main(): Promise<void> {
     const upstreamBaseUrl = await listen(upstream.server);
     const events: GatewayEvent[] = [];
     const usage = createGatewayUsageReadModel({ maxRecentEvents: 10 });
-    const usageStore = createFileGatewayUsageEventStore({ filePath: join(usageStoreDir, "usage-events.jsonl") });
+    const usageStorePath = join(usageStoreDir, "usage-events.jsonl");
     const config = await loadGatewayConfigFromEnv({
       GASKIT_POLICY_PATH: "examples/policies/demo-dapp.yaml",
       GASKIT_DEMO_APP_KEY: "local-dev-demo-key",
       GAS_STATION_URL: upstreamBaseUrl,
       GAS_STATION_BEARER_TOKEN: "local-smoke-token",
+      GASKIT_USAGE_EVENT_STORE_PATH: usageStorePath,
+      GASKIT_OPERATOR_USAGE_TOKEN: "local-operator-smoke-token",
+      GASKIT_OPERATOR_USAGE_MAX_RECENT_EVENTS: "10",
     });
 
     gateway = createGatewayServer({
@@ -100,7 +102,8 @@ async function main(): Promise<void> {
       eventSink: (event) => {
         events.push(event);
         usage.record(event);
-        usageStoreWrites = usageStoreWrites.then(() => usageStore.append(event));
+        usageStoreWrites = usageStoreWrites.then(() => Promise.resolve(config.eventSink?.(event)).then(() => undefined));
+        return usageStoreWrites;
       },
     });
     const gatewayBaseUrl = await listen(gateway);
@@ -261,16 +264,40 @@ async function main(): Promise<void> {
     console.log("ok: local usage read model aggregates sanitized events");
 
     await usageStoreWrites;
-    const durableUsageSnapshot = await usageStore.loadReadModel({ maxRecentEvents: 10 });
-    assert.deepEqual(durableUsageSnapshot.totals, usageSnapshot.totals);
-    assert.deepEqual(durableUsageSnapshot.byAppId, usageSnapshot.byAppId);
-    assert.deepEqual(durableUsageSnapshot.byWalletAddress, usageSnapshot.byWalletAddress);
-    assert.deepEqual(durableUsageSnapshot.recentEvents, usageSnapshot.recentEvents);
+    const durableUsageSnapshot = await config.operatorUsage?.loadSnapshot();
+    assert.deepEqual(durableUsageSnapshot?.totals, usageSnapshot.totals);
+    assert.deepEqual(durableUsageSnapshot?.byAppId, usageSnapshot.byAppId);
+    assert.deepEqual(durableUsageSnapshot?.byWalletAddress, usageSnapshot.byWalletAddress);
+    assert.deepEqual(durableUsageSnapshot?.recentEvents, usageSnapshot.recentEvents);
     const durableUsageOutput = JSON.stringify(durableUsageSnapshot);
     assert.equal(durableUsageOutput.includes("local-dev-demo-key"), false);
     assert.equal(durableUsageOutput.includes("local-smoke-token"), false);
+    assert.equal(durableUsageOutput.includes("local-operator-smoke-token"), false);
     assert.equal(durableUsageOutput.includes("smoke-signature"), false);
     console.log("ok: local usage event store replays sanitized events");
+
+    const missingOperatorAuth = await fetch(`${gatewayBaseUrl}/operator/usage`);
+    assert.equal(missingOperatorAuth.status, 401);
+    assert.equal(missingOperatorAuth.headers.get("cache-control"), "no-store");
+    const invalidOperatorAuth = await fetch(`${gatewayBaseUrl}/operator/usage`, {
+      headers: { authorization: "Bearer local-smoke-token" },
+    });
+    assert.equal(invalidOperatorAuth.status, 403);
+    assert.equal(invalidOperatorAuth.headers.get("cache-control"), "no-store");
+    const operatorUsage = await fetch(`${gatewayBaseUrl}/operator/usage`, {
+      headers: { authorization: "Bearer local-operator-smoke-token" },
+    });
+    const operatorUsageBody = await operatorUsage.json();
+    assert.equal(operatorUsage.status, 200);
+    assert.equal(operatorUsage.headers.get("cache-control"), "no-store");
+    assert.equal(operatorUsageBody.source, "local-file-usage-event-store");
+    assert.deepEqual(operatorUsageBody.usage, durableUsageSnapshot);
+    const operatorUsageOutput = JSON.stringify(operatorUsageBody);
+    assert.equal(operatorUsageOutput.includes("local-dev-demo-key"), false);
+    assert.equal(operatorUsageOutput.includes("local-smoke-token"), false);
+    assert.equal(operatorUsageOutput.includes("local-operator-smoke-token"), false);
+    assert.equal(operatorUsageOutput.includes("smoke-signature"), false);
+    console.log("ok: authenticated local operator usage API returns sanitized usage");
 
     console.log("IOTA GasKit local gateway smoke passed");
   } finally {

@@ -105,19 +105,19 @@ A clean public repository has been scaffolded from a working GaaS prototype and 
   - SDK helpers for policy simulation, reserve, and execute flows;
   - local demo dApp CLI and loopback browser-wrapper smokes;
   - tested Next.js API route and Node backend examples;
-  - sanitized decision events, an in-memory local usage read model, and a file-backed local JSONL usage event-store foundation;
+  - sanitized decision events, an in-memory local usage read model, a file-backed local JSONL usage event-store foundation, and an authenticated local operator usage API foundation;
   - safe Gas Station config template and policy YAML example;
   - threat model, production-hardening, observability, policy, SDK, and testnet-readiness docs.
 
 Local verification from the grant-readiness sprint:
 
-- `npm test`: 102 deterministic tests passed, 0 failed.
+- `npm test`: 109 deterministic tests passed, 0 failed.
 - `npm run typecheck`: passed.
 - `npm run smoke:local`: local gateway smoke passed.
 - `npm run grant:check`: passed locally across tests, typecheck, smokes, offline readiness example, and package dry-run checks.
 - secret-oriented scan over non-ignored project files: 0 obvious private-key/API-token matches.
 
-The current public repo does not yet claim live sponsored testnet execution, completed Docker deployment, durable usage storage, operator dashboard, production monitoring, or final demo video assets. The original prototype proved additional implementation capability such as Express gateway, API-key authentication, quota tracking, transaction logging, dashboard UI, Docker deployment, and Prometheus/Grafana monitoring; grant work turns those proven pieces into a clean open-source toolkit.
+The current public repo does not yet claim live sponsored testnet execution, completed Docker deployment, production usage storage, operator dashboard, production monitoring, or final demo video assets. The original prototype proved additional implementation capability such as Express gateway, API-key authentication, quota tracking, transaction logging, dashboard UI, Docker deployment, and Prometheus/Grafana monitoring; grant work turns those proven pieces into a clean open-source toolkit.
 
 ## Milestones and budget
 

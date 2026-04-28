@@ -105,6 +105,113 @@ test("GET /health returns local gateway status without app auth", async () => {
   assert.equal(body.upstream.configured, true);
 });
 
+test("GET /operator/usage is absent unless operator usage is configured", async () => {
+  const fixture = await startGateway();
+  after(() => fixture.close());
+
+  const response = await fetch(`${fixture.gatewayBaseUrl}/operator/usage`);
+  const body = await response.json();
+
+  assert.equal(response.status, 404);
+  assert.equal(body.error, "NotFound");
+});
+
+test("GET /operator/usage requires a separate bearer token and returns no-store usage", async () => {
+  let snapshotsLoaded = 0;
+  const fixture = await startGateway({
+    operatorUsage: {
+      token: "operator-local-token",
+      source: "local-test-snapshot",
+      async loadSnapshot() {
+        snapshotsLoaded += 1;
+        return {
+          totals: {
+            events: 1,
+            gasBudgetReserved: 7,
+            byOperation: { reserve: 1, execute: 0 },
+            byOutcome: { allowed: 1, rejected: 0, upstream_failed: 0 },
+            byReasonCode: { unknown: 1 },
+          },
+          byAppId: {},
+          byWalletAddress: {},
+          recentEvents: [
+            {
+              id: "event-1",
+              timestamp: "2026-04-27T00:00:00.000Z",
+              operation: "reserve",
+              outcome: "allowed",
+              httpStatus: 200,
+              appId: "demo-dapp",
+              walletAddress: "0xWALLET",
+              packageId: "0xDEMO_PACKAGE",
+              functionName: "mint_badge",
+              gasBudget: 7,
+              gasKitTransactionId: "gaskit_public_id",
+              upstreamReservationId: "reservation-1",
+            },
+          ],
+        };
+      },
+    },
+  });
+  after(() => fixture.close());
+
+  const missing = await fetch(`${fixture.gatewayBaseUrl}/operator/usage`);
+  assert.equal(missing.status, 401);
+  assert.equal(await missing.text(), JSON.stringify({ error: "Unauthorized", message: "Operator bearer token is required." }));
+  assert.equal(missing.headers.get("cache-control"), "no-store");
+
+  const invalid = await fetch(`${fixture.gatewayBaseUrl}/operator/usage`, {
+    headers: { authorization: "Bearer upstream-local-token" },
+  });
+  const invalidText = await invalid.text();
+  assert.equal(invalid.status, 403);
+  assert.equal(invalid.headers.get("cache-control"), "no-store");
+  assert.equal(invalidText.includes("upstream-local-token"), false);
+  assert.equal(invalidText.includes("operator-local-token"), false);
+  assert.equal(invalidText.includes("local-dev-demo-key"), false);
+
+  const valid = await fetch(`${fixture.gatewayBaseUrl}/operator/usage`, {
+    headers: { authorization: "Bearer operator-local-token" },
+  });
+  const body = await valid.json();
+
+  assert.equal(valid.status, 200);
+  assert.equal(valid.headers.get("cache-control"), "no-store");
+  assert.equal(body.source, "local-test-snapshot");
+  assert.match(body.generatedAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(body.usage.totals.events, 1);
+  assert.equal(body.usage.recentEvents[0].appId, "demo-dapp");
+  assert.equal(JSON.stringify(body).includes("operator-local-token"), false);
+  assert.equal(JSON.stringify(body).includes("upstream-local-token"), false);
+  assert.equal(JSON.stringify(body).includes("local-dev-demo-key"), false);
+  assert.equal(snapshotsLoaded, 1);
+});
+
+test("GET /operator/usage hides usage-store load failures", async () => {
+  const fixture = await startGateway({
+    operatorUsage: {
+      token: "operator-local-token",
+      source: "local-test-snapshot",
+      async loadSnapshot() {
+        throw new Error("not-json-with-secret-local-dev-demo-key");
+      },
+    },
+  });
+  after(() => fixture.close());
+
+  const response = await fetch(`${fixture.gatewayBaseUrl}/operator/usage`, {
+    headers: { authorization: "Bearer operator-local-token" },
+  });
+  const text = await response.text();
+
+  assert.equal(response.status, 500);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.equal(text.includes("not-json"), false);
+  assert.equal(text.includes("local-dev-demo-key"), false);
+  assert.deepEqual(JSON.parse(text), { error: "UsageUnavailable", message: "Operator usage snapshot is unavailable." });
+});
+
 test("reserveGas rejects missing app credentials with AUTH_MISSING", async () => {
   const fixture = await startGateway();
   after(() => fixture.close());

@@ -35,7 +35,7 @@ Alert on:
 - Gas Station health failures;
 - unexpected request spikes.
 
-The local JSONL usage event store is suitable for deterministic development and reviewer proof only. Before production, replace or wrap it with storage that has explicit concurrency behavior, retention/compaction, backup/restore, encryption/access-control posture, schema migration strategy, and dashboard/API authentication.
+The local JSONL usage event store and `GET /operator/usage` API are suitable for deterministic development and reviewer proof only. The operator usage API requires a separate bearer token and `Cache-Control: no-store`, but before production replace or wrap this local foundation with storage and access control that has explicit concurrency behavior, retention/compaction, backup/restore, encryption posture, schema migration strategy, dashboard/API authentication, audit logging, and rate limiting.
 
 ## Backups
 

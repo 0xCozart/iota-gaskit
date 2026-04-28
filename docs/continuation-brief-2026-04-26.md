@@ -77,7 +77,7 @@ Current local `npm test` evidence is documented in `docs/milestone-0-proof.md` a
 ### Partially covered
 
 - Deployment kit: safe config template and docs exist, but a reviewer-grade Docker/local official Gas Station stack is not yet proven in this repo.
-- Usage tracking: in-memory local read model exists, but durable store, dashboard API/UI, CSV export, retention, and access control remain future work.
+- Usage tracking: in-memory local read model, file-backed local event store, and authenticated local operator usage API foundation exist, but dashboard UI, CSV export, retention, and production access-control/database hardening remain future work.
 - Observability/security pack: sanitized event docs and threat/hardening docs exist, but production metrics, alert rules, sponsor balance checks, and final demo proof remain future work.
 - SDK/package readiness: local package dry-run exists, but external publish/release hygiene still needs final review.
 
@@ -142,11 +142,9 @@ Do not merge wholesale. Adapt only observability/status patterns after GasKit ha
 
 ## Recommended next deterministic local slices
 
-1. Finish and commit the reviewer/proof docs refresh so grant-facing docs match the current local proof and do not overclaim live/testnet work.
-2. Add the smallest durable usage-store foundation behind tests, while keeping it local-only and private to operator/server code.
-3. Add a minimal authenticated operator usage API or dashboard foundation only after the durable usage boundary is safe.
-4. Review SDK/package publish readiness with dry-run checks only.
-5. Prepare live/testnet execution separately, requiring explicit operator approval and secrets handled interactively.
+1. Review SDK/package publish readiness with dry-run checks only.
+2. Prepare live/testnet execution separately, requiring explicit operator approval and secrets handled interactively.
+3. Plan the production usage-storage/dashboard/export hardening path after local proof work is committed.
 
 ## Guardrails for the next pass
 

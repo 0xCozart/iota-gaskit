@@ -4,6 +4,8 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { evaluateSponsorshipPolicy } from "@iota-gaskit/policy-gateway";
 import type { PolicyDecision, PolicyReasonCode, SponsorshipPolicy, SponsorshipRequestContext } from "@iota-gaskit/shared-types";
 
+import type { GatewayUsageSnapshot } from "./usage.js";
+
 export interface GatewayAppConfig {
   apiKey: string;
   policy: SponsorshipPolicy;
@@ -29,12 +31,19 @@ export interface GatewayEvent {
   upstreamStatus?: number;
 }
 
+export interface GatewayOperatorUsageConfig {
+  token: string;
+  source?: string;
+  loadSnapshot: () => GatewayUsageSnapshot | Promise<GatewayUsageSnapshot>;
+}
+
 export interface GatewayConfig {
   apps: Record<string, GatewayAppConfig>;
   upstreamBaseUrl?: string;
   upstreamBearerToken?: string;
   fetchImpl?: typeof fetch;
   eventSink?: (event: GatewayEvent) => void | Promise<void>;
+  operatorUsage?: GatewayOperatorUsageConfig;
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -77,6 +86,11 @@ function emptyCounters(): UsageCounters {
 
 function writeJson(response: ServerResponse, status: number, body: unknown): void {
   response.writeHead(status, { "content-type": "application/json" });
+  response.end(JSON.stringify(body));
+}
+
+function writeNoStoreJson(response: ServerResponse, status: number, body: unknown): void {
+  response.writeHead(status, { "cache-control": "no-store", "content-type": "application/json" });
   response.end(JSON.stringify(body));
 }
 
@@ -161,6 +175,19 @@ function validateGatewayConfig(config: GatewayConfig): void {
     }
     seenKeys.set(app.apiKey, appId);
   }
+  if (config.operatorUsage) {
+    if (!config.operatorUsage.token.trim()) {
+      throw new Error("Gateway operator usage token must be non-empty when configured.");
+    }
+    for (const [appId, app] of Object.entries(config.apps)) {
+      if (config.operatorUsage.token === app.apiKey) {
+        throw new Error(`Gateway operator usage token must be distinct from app API key for ${appId}.`);
+      }
+    }
+    if (config.upstreamBearerToken && config.operatorUsage.token === config.upstreamBearerToken) {
+      throw new Error("Gateway operator usage token must be distinct from the upstream bearer token.");
+    }
+  }
 }
 
 function findAppByApiKey(config: GatewayConfig, apiKey: string | undefined): { appId: string; app: GatewayAppConfig } | undefined {
@@ -169,6 +196,10 @@ function findAppByApiKey(config: GatewayConfig, apiKey: string | undefined): { a
     if (apiKeysEqual(app.apiKey, apiKey)) return { appId, app };
   }
   return undefined;
+}
+
+function operatorTokensEqual(configuredToken: string, providedToken: string): boolean {
+  return apiKeysEqual(configuredToken, providedToken);
 }
 
 function walletKey(appId: string, walletAddress?: string): string {
@@ -379,6 +410,35 @@ export function createGatewayServer(config: GatewayConfig): Server {
       service: "iota-gaskit-policy-gateway",
       upstream: { configured: Boolean(config.upstreamBaseUrl) },
     });
+  }
+
+  async function handleOperatorUsage(request: IncomingMessage, response: ServerResponse): Promise<void> {
+    const operatorUsage = config.operatorUsage;
+    if (!operatorUsage) {
+      return writeJson(response, 404, { error: "NotFound", message: "Route not found." });
+    }
+
+    const token = parseBearer(request.headers.authorization);
+    if (!token) {
+      return writeNoStoreJson(response, 401, { error: "Unauthorized", message: "Operator bearer token is required." });
+    }
+    if (!operatorTokensEqual(operatorUsage.token, token)) {
+      return writeNoStoreJson(response, 403, { error: "Forbidden", message: "Operator bearer token is invalid." });
+    }
+
+    try {
+      const usage = await operatorUsage.loadSnapshot();
+      return writeNoStoreJson(response, 200, {
+        source: operatorUsage.source ?? "local-usage-snapshot",
+        generatedAt: new Date().toISOString(),
+        usage,
+      });
+    } catch {
+      return writeNoStoreJson(response, 500, {
+        error: "UsageUnavailable",
+        message: "Operator usage snapshot is unavailable.",
+      });
+    }
   }
 
   async function handlePolicySimulate(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -596,6 +656,7 @@ export function createGatewayServer(config: GatewayConfig): Server {
     void (async () => {
       try {
         if (request.method === "GET" && request.url === "/health") return await handleHealth(response);
+        if (request.method === "GET" && request.url === "/operator/usage") return await handleOperatorUsage(request, response);
         if (request.method === "POST" && request.url === "/v1/policy/simulate") return await handlePolicySimulate(request, response);
         if (request.method === "POST" && request.url === "/v1/reserve_gas") return await handleReserve(request, response);
         if (request.method === "POST" && request.url === "/v1/execute_tx") return await handleExecute(request, response);

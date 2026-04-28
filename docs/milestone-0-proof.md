@@ -90,8 +90,8 @@ npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp 
 Latest local `npm test` result:
 
 ```text
-tests 102
-pass 102
+tests 109
+pass 109
 fail 0
 cancelled 0
 skipped 0
@@ -154,7 +154,8 @@ Observability and usage tests verify:
 - event string fields are bounded and control-character sanitized;
 - event sink failures do not break request handling;
 - the in-memory local usage read model consumes sanitized events, counts by operation/outcome/app/wallet/reason, bounds recent events, distinguishes missing metadata from literal `unknown`, and stores only allowlisted fields;
-- the file-backed usage event store appends only sanitized allowlisted event fields, replays deterministic snapshots, treats missing files as empty, and fails corrupt JSON/stored event lines without exposing raw corrupt content.
+- the file-backed usage event store appends only sanitized allowlisted event fields, replays deterministic snapshots, treats missing files as empty, and fails corrupt JSON/stored event lines without exposing raw corrupt content;
+- the authenticated local operator usage API is absent unless configured, requires a separate bearer token, marks responses `Cache-Control: no-store`, returns sanitized local usage snapshots, and hides usage-store load failures without leaking token, app key, upstream bearer, file-path, or corrupt-line details.
 
 Readiness and package tests verify:
 
@@ -206,7 +207,7 @@ The current repo proves:
 3. The core policy, gateway, SDK, examples, smoke, readiness, and observability surfaces are scaffolded with passing deterministic local tests.
 4. The local policy gateway can enforce app-key auth, quotas, package/function allowlists, wallet denial, policy simulation, and safe reserve/execute proxy semantics against a mocked upstream.
 5. The demo dApp has deterministic CLI and browser-wrapper proof paths that do not expose app credentials to the browser.
-6. The project is ready to proceed into remaining milestone work where not already locally scaffolded: live/local Gas Station integration, package/SDK finalization, durable usage storage, dashboard, monitoring, and real testnet demo.
+6. The project is ready to proceed into remaining milestone work where not already locally scaffolded: live/local Gas Station integration, package/SDK finalization, production usage storage, dashboard UI, monitoring, and real testnet demo.
 
 ## What this proof does not claim
 
@@ -215,7 +216,7 @@ This proof does not claim that:
 - a real sponsored testnet transaction has executed from this repo;
 - sponsor wallet funding, sponsor key validity, or live IOTA RPC connectivity has been verified;
 - the full Docker Compose local stack has been proven end-to-end against official IOTA Gas Station;
-- usage tracking is a complete production database with dashboard/operator API;
+- usage tracking is a complete production database with dashboard UI;
 - the operator dashboard has all PRD views yet;
 - production monitoring, alerting, KMS/external signer integration, reverse proxy/TLS, or final demo video assets are complete.
 

@@ -64,6 +64,66 @@ test("policy config rejects missing package allowlists instead of allowing all p
   );
 });
 
+test("policy config rejects operator usage token without a usage store path", async () => {
+  const policyPath = await writePolicy(validPolicy);
+
+  await assert.rejects(
+    () =>
+      loadGatewayConfigFromEnv({
+        GASKIT_POLICY_PATH: policyPath,
+        GASKIT_DEMO_APP_KEY: "demo-key",
+        GASKIT_OPERATOR_USAGE_TOKEN: "operator-token",
+      }),
+    /GASKIT_USAGE_EVENT_STORE_PATH/,
+  );
+});
+
+test("policy config rejects blank usage store paths when operator usage is enabled", async () => {
+  const policyPath = await writePolicy(validPolicy);
+
+  await assert.rejects(
+    () =>
+      loadGatewayConfigFromEnv({
+        GASKIT_POLICY_PATH: policyPath,
+        GASKIT_DEMO_APP_KEY: "demo-key",
+        GASKIT_USAGE_EVENT_STORE_PATH: "   ",
+        GASKIT_OPERATOR_USAGE_TOKEN: "operator-token",
+      }),
+    /GASKIT_USAGE_EVENT_STORE_PATH/,
+  );
+});
+
+test("policy config wires local usage event store and authenticated operator usage snapshot", async () => {
+  const policyPath = await writePolicy(validPolicy);
+  const usageDir = await mkdtemp(join(tmpdir(), "gaskit-usage-config-"));
+  const usagePath = join(usageDir, "usage-events.jsonl");
+
+  const config = await loadGatewayConfigFromEnv({
+    GASKIT_POLICY_PATH: policyPath,
+    GASKIT_DEMO_APP_KEY: "demo-key",
+    GASKIT_USAGE_EVENT_STORE_PATH: usagePath,
+    GASKIT_OPERATOR_USAGE_TOKEN: "operator-token",
+    GASKIT_OPERATOR_USAGE_MAX_RECENT_EVENTS: "0",
+  });
+
+  assert.equal(typeof config.eventSink, "function");
+  assert.equal(config.operatorUsage?.token, "operator-token");
+  await config.eventSink?.({
+    id: "event-1",
+    timestamp: "2026-04-27T00:00:00.000Z",
+    operation: "reserve",
+    outcome: "allowed",
+    httpStatus: 200,
+    appId: "demo-dapp",
+    gasBudget: 9,
+  });
+  const snapshot = await config.operatorUsage?.loadSnapshot();
+
+  assert.equal(snapshot?.totals.events, 1);
+  assert.equal(snapshot?.totals.gasBudgetReserved, 9);
+  assert.deepEqual(snapshot?.recentEvents, []);
+});
+
 test("policy config rejects unknown app status values", async () => {
   const policyPath = await writePolicy(validPolicy.replace("status: active", "status: typo"));
 

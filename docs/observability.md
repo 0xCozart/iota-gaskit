@@ -102,7 +102,34 @@ const snapshot = await store.loadReadModel({ maxRecentEvents: 100 });
 
 The store writes one JSON object per line and uses the same field allowlist as the local usage read model. Extra fields on wider event-like objects are discarded before append, required fields and present optional fields are validated before storage, string fields are bounded and control-character sanitized at the store boundary, missing files replay as an empty store, blank lines are ignored, and malformed JSON/event shapes fail replay with bounded error messages that include only the line number, not raw corrupt content. Replay validates the file before invoking the caller's record callback, so corrupt later lines do not partially mutate caller state.
 
-This is still a local foundation, not the final production usage database. It does not provide concurrency locks, retention/compaction, schema migrations, encryption at rest, access control, dashboard routes, or CSV export yet.
+This is still a local foundation, not the final production usage database. It does not provide concurrency locks, retention/compaction, schema migrations, encryption at rest, dashboard routes, or CSV export yet.
+
+## Authenticated local operator usage API
+
+`GET /operator/usage` is an opt-in local operator API for reading the sanitized usage snapshot from the local JSONL event store. It is absent unless `GatewayConfig.operatorUsage` is configured, or unless `loadGatewayConfigFromEnv()` receives both a local usage store path and a separate operator token:
+
+```bash
+GASKIT_USAGE_EVENT_STORE_PATH=tmp/gaskit/usage-events.jsonl
+GASKIT_OPERATOR_USAGE_TOKEN=replace-with-local-operator-token
+GASKIT_OPERATOR_USAGE_MAX_RECENT_EVENTS=100
+```
+
+Requests must send the operator token as a bearer token:
+
+```bash
+curl -H "Authorization: Bearer $GASKIT_OPERATOR_USAGE_TOKEN" \
+  http://127.0.0.1:8787/operator/usage
+```
+
+Successful responses are marked `Cache-Control: no-store` and include:
+
+- `source`, currently `local-file-usage-event-store` for env-wired local JSONL replay;
+- `generatedAt`, an ISO timestamp for the response;
+- `usage`, the same sanitized `GatewayUsageSnapshot` shape returned by the local read model.
+
+The operator token is intentionally separate from app API keys and the upstream Gas Station bearer token. Missing auth returns 401, invalid auth returns 403, and usage-store load failures return a bounded `UsageUnavailable` error without raw corrupt line content, file paths, app keys, operator tokens, or upstream bearer tokens.
+
+This is a local authenticated usage API foundation, not a production dashboard or complete access-control system. Treat its usage data as sensitive operational metadata because app IDs, wallet addresses, package IDs, function names, and rejection rates can reveal product behavior.
 
 ## Current verification
 

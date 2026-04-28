@@ -28,6 +28,8 @@ The runnable local policy gateway can emit sanitized structured decision events 
 
 `apps/policy-gateway-service/src/usage-store.ts` provides a local file-backed JSONL event-store foundation. It appends only the same allowlisted sanitized event fields used by the in-memory read model, validates required and present optional event fields before storage/replay, tolerates missing files as empty stores, rejects malformed/corrupt event lines during replay without exposing raw corrupt content, and can replay into the usage read model. This is suitable for deterministic local smoke/proof and as a stepping stone toward a production durable store.
 
+`GET /operator/usage` provides an opt-in authenticated local operator API over that usage snapshot when `GatewayConfig.operatorUsage` is configured. Env wiring uses `GASKIT_USAGE_EVENT_STORE_PATH` plus a separate `GASKIT_OPERATOR_USAGE_TOKEN`; the endpoint is absent by default, returns `Cache-Control: no-store`, and hides usage-store load failures behind bounded error responses without app keys, upstream bearer tokens, operator tokens, raw corrupt content, or file paths.
+
 These local pieces are deterministic foundations for later dashboard/storage work, not a complete production usage database or authenticated operator dashboard yet.
 
 See `docs/observability.md` for the current event contract, local read-model contract, and future production usage-store direction.

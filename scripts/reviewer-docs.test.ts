@@ -17,7 +17,7 @@ function literalPattern(value: string): RegExp {
 test("milestone proof reflects the current verified local surface", async () => {
   const proof = await readDoc("docs/milestone-0-proof.md");
 
-  assert.match(proof, /tests 102\s+pass 102\s+fail 0/s);
+  assert.match(proof, /tests 109\s+pass 109\s+fail 0/s);
   assert.doesNotMatch(proof, /tests 16\s+pass 16/s);
   assert.doesNotMatch(proof, /tests 94\s+pass 94/s);
   assert.doesNotMatch(proof, /tests 97\s+pass 97/s);
@@ -93,12 +93,13 @@ test("continuation and grant docs do not contradict current local readiness prog
   assert.match(brief, /SDK is proven against deterministic local gateway and demo smoke paths/);
   assert.match(brief, /sanitized gateway decision events and in-memory local usage read model are implemented/);
 
-  assert.match(grantApplication, /`npm test`: 102 deterministic tests passed, 0 failed/);
+  assert.match(grantApplication, /`npm test`: 109 deterministic tests passed, 0 failed/);
   assert.match(grantApplication, /local gateway smoke/);
   assert.match(grantApplication, /policy simulation/);
   assert.match(grantApplication, /sanitized decision events/);
   assert.match(grantApplication, /in-memory local usage read model/);
   assert.match(grantApplication, /file-backed local JSONL usage event-store foundation/);
+  assert.match(grantApplication, /authenticated local operator usage API|operator usage API/);
 
   for (const doc of [brief, grantApplication]) {
     assert.doesNotMatch(doc, /16 tests passed/);
