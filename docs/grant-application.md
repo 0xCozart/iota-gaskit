@@ -111,7 +111,7 @@ A clean public repository has been scaffolded from a working GaaS prototype and 
 
 Local verification from the grant-readiness sprint:
 
-- `npm test`: 109 deterministic tests passed, 0 failed.
+- `npm test`: 110 deterministic tests passed, 0 failed.
 - `npm run typecheck`: passed.
 - `npm run smoke:local`: local gateway smoke passed.
 - `npm run grant:check`: passed locally across tests, typecheck, smokes, offline readiness example, and package dry-run checks.

@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "app": "iota-gaskit",
+  "issue": "none",
+  "mode": "route-local",
+  "surface": "M4 package publish-readiness metadata and docs",
+  "contracts": [
+    "AGENTS.md",
+    "apex.workflow.json",
+    "README.md",
+    "docs/milestone-0-proof.md",
+    "docs/grant-application.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "package.json",
+    "packages/shared-types/package.json",
+    "packages/policy-gateway/package.json",
+    "packages/sdk/package.json"
+  ],
+  "ownedFiles": [
+    "README.md",
+    "docs/continuation-brief-2026-04-26.md",
+    "docs/grant-application.md",
+    "docs/milestone-0-proof.md",
+    "packages/shared-types/package.json",
+    "packages/shared-types/README.md",
+    "packages/shared-types/tsconfig.build.json",
+    "packages/policy-gateway/package.json",
+    "packages/policy-gateway/README.md",
+    "packages/policy-gateway/tsconfig.build.json",
+    "packages/sdk/package.json",
+    "packages/sdk/README.md",
+    "packages/sdk/tsconfig.build.json",
+    "scripts/package-publish.test.ts",
+    "scripts/reviewer-docs.test.ts",
+    "tmp/apex-workflow/m4-package-publish-readiness.json"
+  ],
+  "noTouch": [
+    "/mnt/d/CURSOR/gas_station private/prototype files",
+    "npm registry credentials or tokens",
+    "real npm publish without --dry-run",
+    "real IOTA network/testnet sponsor keys",
+    "deployments or Docker services",
+    "production database service",
+    "dashboard UI"
+  ],
+  "codeIntelligence": {
+    "provider": "focused-search-and-package-dry-run",
+    "impacts": [
+      "packages/shared-types/package.json",
+      "packages/policy-gateway/package.json",
+      "packages/sdk/package.json",
+      "packages/shared-types/tsconfig.build.json",
+      "packages/policy-gateway/tsconfig.build.json",
+      "packages/sdk/tsconfig.build.json",
+      "scripts/package-publish.test.ts",
+      "README.md",
+      "docs/milestone-0-proof.md"
+    ],
+    "detect": null
+  },
+  "checks": {
+    "required": [
+      "node --import tsx --test scripts/package-publish.test.ts scripts/reviewer-docs.test.ts",
+      "npm run pack:check",
+      "npm publish --dry-run --tag next --access public -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk",
+      "npm test",
+      "npm run typecheck",
+      "npm run smoke:local",
+      "npm run grant:check",
+      "git diff --check"
+    ],
+    "optional": [
+      "node /mnt/d/CURSOR/apex-workflow/scripts/apex-manifest.mjs detect --config=apex.workflow.json --file=tmp/apex-workflow/m4-package-publish-readiness.json"
+    ],
+    "browser": "skip: package publish-readiness metadata and docs only; browser smoke remains covered by npm run grant:check",
+    "typecheck": "required: npm run typecheck"
+  },
+  "tracker": {
+    "provider": "none",
+    "disposition": "none",
+    "id": null
+  },
+  "downshiftProof": "route-local because this slice only adjusts package metadata, package READMEs, publish-facing build-map settings, and docs/tests around npm dry-run readiness. It does not publish packages, contact IOTA, modify runtime gateway behavior, touch secrets, or introduce a dashboard/deployment surface.",
+  "knownFailures": [
+    "Initial package metadata guard failed before publishConfig, package README, and files allowlist updates were implemented; expected TDD red state.",
+    "An initial manifest draft used the wrong schema and apex-manifest detect rejected it; rewritten to the repo's apex.workflow.json schema."
+  ],
+  "notes": "Adds package README files, pins public prerelease publish metadata, excludes stale source/declaration maps from packed artifacts, disables package build map emission for publish-facing outputs, and documents that real npm publication still requires explicit operator approval. No registry credential is required or stored."
+}

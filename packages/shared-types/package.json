@@ -13,8 +13,10 @@
   "license": "Apache-2.0",
   "description": "Shared policy and request/response types for IOTA GasKit.",
   "files": [
-    "dist",
-    "LICENSE"
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "LICENSE",
+    "README.md"
   ],
   "sideEffects": false,
   "scripts": {
@@ -22,5 +24,9 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
   }
 }

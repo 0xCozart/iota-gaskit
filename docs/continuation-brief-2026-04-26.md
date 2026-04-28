@@ -79,7 +79,7 @@ Current local `npm test` evidence is documented in `docs/milestone-0-proof.md` a
 - Deployment kit: safe config template and docs exist, but a reviewer-grade Docker/local official Gas Station stack is not yet proven in this repo.
 - Usage tracking: in-memory local read model, file-backed local event store, and authenticated local operator usage API foundation exist, but dashboard UI, CSV export, retention, and production access-control/database hardening remain future work.
 - Observability/security pack: sanitized event docs and threat/hardening docs exist, but production metrics, alert rules, sponsor balance checks, and final demo proof remain future work.
-- SDK/package readiness: local package dry-run exists, but external publish/release hygiene still needs final review.
+- SDK/package readiness: local package dry-run exists, package READMEs and safe prerelease publish metadata are present, and actual public npm release still requires an explicit operator-approved publish step.
 
 ### Not yet proven in this repo
 
@@ -142,9 +142,9 @@ Do not merge wholesale. Adapt only observability/status patterns after GasKit ha
 
 ## Recommended next deterministic local slices
 
-1. Review SDK/package publish readiness with dry-run checks only.
-2. Prepare live/testnet execution separately, requiring explicit operator approval and secrets handled interactively.
-3. Plan the production usage-storage/dashboard/export hardening path after local proof work is committed.
+1. Prepare live/testnet execution separately, requiring explicit operator approval and secrets handled interactively.
+2. Plan the production usage-storage/dashboard/export hardening path after local proof work is committed.
+3. Before any real npm release, run the package dry-run/public-access checks again and publish only with explicit operator approval.
 
 ## Guardrails for the next pass
 

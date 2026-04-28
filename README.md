@@ -65,7 +65,7 @@ npm run grant:check
 
 Latest local verification:
 
-- `npm test`: 109 deterministic package/app/script/example/reviewer-doc/usage-store/operator-usage/readiness tests passed locally.
+- `npm test`: 110 deterministic package/app/script/example/reviewer-doc/usage-store/operator-usage/readiness/package-publish tests passed locally.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
@@ -133,7 +133,16 @@ examples/
 
 ## Packages
 
-The monorepo root is marked `private` to prevent accidental publication of the workspace root. Package-level publishing is a later milestone path; the current workspace packages build and pack locally for verification.
+The monorepo root is marked `private` to prevent accidental publication of the workspace root. Package-level publishing remains a later milestone action, but the current workspace packages now have package READMEs, public prerelease publish metadata (`access=public`, `tag=next`), map-free packed artifacts, and local `npm pack --dry-run` verification for publishable packages.
+
+Dry-run package checks:
+
+```bash
+npm run pack:check
+npm publish --dry-run --tag next --access public -w @iota-gaskit/shared-types -w @iota-gaskit/policy-gateway -w @iota-gaskit/sdk
+```
+
+Do not run a real `npm publish` without explicit operator approval and registry credentials handled outside the repo.
 
 
 ### `@iota-gaskit/shared-types`

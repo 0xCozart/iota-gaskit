@@ -90,8 +90,8 @@ npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp 
 Latest local `npm test` result:
 
 ```text
-tests 109
-pass 109
+tests 110
+pass 110
 fail 0
 cancelled 0
 skipped 0
@@ -162,7 +162,7 @@ Readiness and package tests verify:
 - offline testnet readiness checks validate env/config shape without contacting IOTA RPC or Gas Station;
 - secret-like values are hidden in readiness output;
 - `.env.example` intentionally documents placeholders while real readiness fails on placeholders;
-- workspace package build and `npm pack --dry-run` succeed for publishable packages.
+- workspace package build and `npm pack --dry-run` succeed for publishable packages, with package READMEs and safe prerelease publish metadata present locally.
 
 ## Secret-oriented scan
 

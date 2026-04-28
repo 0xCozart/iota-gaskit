@@ -15,9 +15,9 @@ function literalPattern(value: string): RegExp {
 }
 
 test("milestone proof reflects the current verified local surface", async () => {
-  const proof = await readDoc("docs/milestone-0-proof.md");
+  const [proof, readme] = await Promise.all([readDoc("docs/milestone-0-proof.md"), readDoc("README.md")]);
 
-  assert.match(proof, /tests 109\s+pass 109\s+fail 0/s);
+  assert.match(proof, /tests 110\s+pass 110\s+fail 0/s);
   assert.doesNotMatch(proof, /tests 16\s+pass 16/s);
   assert.doesNotMatch(proof, /tests 94\s+pass 94/s);
   assert.doesNotMatch(proof, /tests 97\s+pass 97/s);
@@ -28,6 +28,10 @@ test("milestone proof reflects the current verified local surface", async () => 
   assert.match(proof, /in-memory local usage read model/);
   assert.match(proof, /file-backed usage event store/);
   assert.match(proof, /Node backend and Next\.js API route examples/);
+  assert.match(proof, /workspace package build and `npm pack --dry-run` succeed/);
+  assert.match(proof, /package READMEs and safe prerelease publish metadata/);
+  assert.match(readme, /npm publish --dry-run --tag next --access public/);
+  assert.match(readme, /Do not run a real `npm publish` without explicit operator approval/);
   assert.match(proof, /does not claim that:[\s\S]*real sponsored testnet transaction/s);
 });
 
@@ -93,7 +97,7 @@ test("continuation and grant docs do not contradict current local readiness prog
   assert.match(brief, /SDK is proven against deterministic local gateway and demo smoke paths/);
   assert.match(brief, /sanitized gateway decision events and in-memory local usage read model are implemented/);
 
-  assert.match(grantApplication, /`npm test`: 109 deterministic tests passed, 0 failed/);
+  assert.match(grantApplication, /`npm test`: 110 deterministic tests passed, 0 failed/);
   assert.match(grantApplication, /local gateway smoke/);
   assert.match(grantApplication, /policy simulation/);
   assert.match(grantApplication, /sanitized decision events/);
