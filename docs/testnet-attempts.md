@@ -34,3 +34,23 @@ Sanitized observed reserve result:
 Outcome: no sponsored testnet transaction digest was produced in this attempt.
 
 Current blocker for real testnet completion: the configured Gas Station upstream returned HTTP 502 for reserve. Next live slice should verify upstream Gas Station health/logs, sponsor wallet funding/key validity, IOTA RPC connectivity, and reserve request compatibility before retrying execute.
+
+## 2026-05-05 upstream diagnosis follow-up
+
+Local environment discovery found `GAS_STATION_URL` configured to loopback `http://127.0.0.1:9527`, but no process was listening on that port and Docker was unavailable in this WSL session (`Cannot connect to the Docker daemon at unix:///var/run/docker.sock`). Direct health probes to `/`, `/health`, `/v1/health`, `/api/health`, and `/metrics` all failed to connect.
+
+A reusable sanitized diagnostic command now exists:
+
+```bash
+npm run diagnose:gas-station -- --skip-reserve
+npm run diagnose:gas-station
+```
+
+Use `--skip-reserve` first to check Gas Station HTTP reachability and IOTA RPC connectivity without creating a reservation. Then run the full probe only after the upstream is intentionally online, funded, and pointed at the correct testnet RPC.
+
+Before retrying the real execute path, bring the upstream Gas Station back online and verify:
+
+1. `GAS_STATION_URL` points at the actual reachable upstream from the policy gateway process.
+2. The upstream Gas Station logs do not show signer/key, Redis, RPC, or coin-inventory errors.
+3. The sponsor address derived from the configured keypair is funded on the same network as `IOTA_RPC_URL`.
+4. `POST /v1/reserve_gas` accepts the gateway body shape `{ "gas_budget": 50000000, "reserve_duration_secs": 120 }` with the configured bearer token.

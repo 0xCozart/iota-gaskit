@@ -22,6 +22,16 @@ test("local smoke script builds workspace packages before running gateway smoke"
   );
 });
 
+test("gas station diagnosis script builds before probing live upstream", () => {
+  const diagnose = packageJson.scripts?.["diagnose:gas-station"];
+
+  assert.equal(
+    diagnose,
+    "npm run build && tsx scripts/diagnose-gas-station-upstream.ts",
+    "npm run diagnose:gas-station must not depend on pre-existing ignored dist artifacts",
+  );
+});
+
 test("root npm test includes script, example, package, and app regression tests", () => {
   const npmTest = packageJson.scripts?.["test"] ?? "";
 
