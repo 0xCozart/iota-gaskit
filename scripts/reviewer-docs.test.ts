@@ -97,10 +97,12 @@ test("continuation and grant docs do not contradict current local readiness prog
     readDoc("docs/grant-application.md"),
   ]);
 
-  assert.match(brief, /Status update after local readiness slices/);
+  assert.match(brief, /Status update after grant-readiness and live testnet proof slices/);
   assert.match(brief, /policy simulation endpoint is implemented/);
   assert.match(brief, /SDK is proven against deterministic local gateway and demo smoke paths/);
   assert.match(brief, /sanitized gateway decision events and in-memory local usage read model are implemented/);
+  assert.match(brief, /real sponsored IOTA testnet transaction has executed/);
+  assert.match(brief, /2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H/);
 
   assert.match(grantApplication, /`npm test`: 118 deterministic tests passed, 0 failed/);
   assert.match(grantApplication, /local gateway smoke/);

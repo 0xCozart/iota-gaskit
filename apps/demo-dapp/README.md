@@ -1,6 +1,6 @@
 # GasKit Demo dApp
 
-This app is the local-only Milestone 1 demo surface for the public GasKit SDK and policy gateway. It intentionally uses placeholder transaction bytes/signatures and a mock/local gateway path before any real IOTA network, sponsor key, Docker, deployment, or private prototype dependency is required.
+This app is the deterministic local Milestone 1 demo surface for the public GasKit SDK and policy gateway. It intentionally uses placeholder transaction bytes/signatures and a mock/local gateway path so reviewers can run the browser and CLI proof without real IOTA network access, sponsor keys, Docker, deployment, or private prototype dependencies.
 
 ## Local grant flow
 
@@ -66,4 +66,4 @@ The default values are for local development only. Do not commit real API keys, 
 
 ## Scope boundary
 
-This is not yet a production browser dApp and does not submit a real testnet transaction. It is the safe local integration bridge between the SDK, policy gateway, browser wrapper, and demo dApp before the later real IOTA transaction slice.
+This is not a production browser dApp and its smoke tests do not submit a real testnet transaction. It remains the safe local integration bridge between the SDK, policy gateway, browser wrapper, and demo dApp. The separate opt-in live proof is `npm run execute:testnet-demo`, documented in `docs/testnet-attempts.md`, and must only be run with operator-controlled testnet credentials.

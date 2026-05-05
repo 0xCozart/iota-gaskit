@@ -16,20 +16,21 @@ The canonical PRD has been captured in:
 
 - `docs/product-requirements.md`
 
-## Status update after local readiness slices
+## Status update after grant-readiness and live testnet proof slices
 
-The clean `iota-gaskit` repo has moved beyond the initial scaffold. It now has a deterministic local gateway/SDK/demo proof that remains intentionally separate from live/testnet execution.
+The clean `iota-gaskit` repo has moved beyond the initial scaffold. It now has a deterministic local gateway/SDK/demo proof plus an opt-in real IOTA testnet sponsored execute proof. The deterministic reviewer path remains intentionally separate from live/testnet execution.
 
 Current local proof includes:
 
 - Apache-2.0 open-source framing, contribution/security docs, grant scope, milestone docs, reviewer walkthrough/checklist, and Milestone 0 proof evidence.
 - `@iota-gaskit/shared-types`, `@iota-gaskit/policy-gateway`, and `@iota-gaskit/sdk` packages.
 - A runnable local policy gateway service under `apps/policy-gateway-service` with `GET /health`, reserve, execute, and authenticated local policy simulation routes.
-- Deterministic local smoke coverage with a mock upstream, loopback gateway, public SDK calls, local demo dApp flow, browser wrapper flow, offline testnet-readiness example check, and package dry-run checks.
+- Deterministic local smoke coverage with a mock upstream, loopback gateway, public SDK calls, local demo dApp flow, browser wrapper flow, offline testnet-readiness example check, package dry-run checks, and deterministic secret scan.
 - The policy simulation endpoint is implemented as an authenticated gateway-local/offline preflight that evaluates existing policy/quota state without upstream Gas Station calls, reservation creation, quota mutation, or reserve/execute event emission.
 - SDK is proven against deterministic local gateway and demo smoke paths, including `simulatePolicy()`, `reserveGas()`, and `executeSponsoredTransaction()`.
 - sanitized gateway decision events and in-memory local usage read model are implemented, tested, and documented as a local foundation for durable usage/dashboard work.
 - Node backend and Next.js API route examples are tested with server-side credential boundaries and safe frontend response projections.
+- A real sponsored IOTA testnet transaction has executed through the local policy gateway plus local Docker Gas Station, with public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
 
 Latest local proof documents are:
 
@@ -52,7 +53,7 @@ npm run grant:check
 `grant:check` expands to:
 
 ```text
-npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check
+npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run secrets:scan
 ```
 
 The current reviewer/proof docs also include guard tests in `scripts/reviewer-docs.test.ts` so stale proof claims fail the root `npm test` command.
@@ -61,7 +62,7 @@ Current local `npm test` evidence is documented in `docs/milestone-0-proof.md` a
 
 ## Current PRD coverage
 
-### Mostly covered for deterministic local grant proof
+### Mostly covered for deterministic local grant proof and opt-in testnet proof
 
 - Open-source positioning and grant framing.
 - License/contribution/security hygiene.
@@ -73,18 +74,18 @@ Current local `npm test` evidence is documented in `docs/milestone-0-proof.md` a
 - Offline testnet-readiness example check that validates env/config shape without contacting IOTA RPC or Gas Station.
 - Sanitized gateway decision events and local in-memory usage read-model foundation.
 - Backend and framework-route examples that keep app credentials server-side.
+- Real sponsored testnet transaction execution via `npm run execute:testnet-demo` with public proof digest.
 
 ### Partially covered
 
-- Deployment kit: safe config template and docs exist, but a reviewer-grade Docker/local official Gas Station stack is not yet proven in this repo.
+- Deployment kit: safe config template and docs exist, and a local Docker Gas Station plus policy gateway path has been proven for testnet execution; production deployment automation remains future work.
 - Usage tracking: in-memory local read model, file-backed local event store, and authenticated local operator usage API foundation exist, but dashboard UI, CSV export, retention, and production access-control/database hardening remain future work.
-- Observability/security pack: sanitized event docs and threat/hardening docs exist, but production metrics, alert rules, sponsor balance checks, and final demo proof remain future work.
+- Observability/security pack: sanitized event docs, threat/hardening docs, CI, and deterministic secret scan exist, but production metrics, alert rules, sponsor balance checks, and final demo video assets remain future work.
 - SDK/package readiness: local package dry-run exists, package READMEs and safe prerelease publish metadata are present, and actual public npm release still requires an explicit operator-approved publish step.
 
 ### Not yet proven in this repo
 
-- Real sponsored testnet transaction using operator-provided secrets.
-- Sponsor wallet funding, sponsor private-key validity, or upstream official Gas Station liveness.
+- Production sponsor wallet funding policy, custody model, and long-running upstream official Gas Station liveness.
 - Durable app/project persistence and API-key lifecycle.
 - Durable/shared quota counters for multi-process production operation.
 - Authenticated operator dashboard, app/wallet usage views, rejection/error/quota views, and CSV export.
