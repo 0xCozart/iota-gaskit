@@ -80,3 +80,37 @@ fail: Gas Station reserve_gas compatibility probe fetch failed
 ```
 
 Outcome: the real testnet transaction was not retried because the configured upstream Gas Station is offline/unreachable. The next required operator action is to start Docker/Gas Station or point `GAS_STATION_URL` at a reachable upstream, then rerun `npm run diagnose:gas-station` before attempting execute.
+
+## 2026-05-05 Docker/Gas Station recovery retry
+
+Docker access was recovered in this WSL session by using the existing Docker group path (`sg docker ...`). Docker daemon was already available to that group once invoked through the group context.
+
+Started local live upstream containers:
+
+- `gaskit-redis`
+- `gaskit-gas-station`, bound to `127.0.0.1:9527`
+
+Sanitized Gas Station observations:
+
+- `GET /` returned HTTP 200 with `OK`.
+- `/v1/health` returned HTTP 404; the official image still serves root health successfully.
+- Gas Station initialized against `https://api.testnet.iota.cafe` and reported sponsor coin inventory.
+- Full diagnostic passed its fatal checks:
+
+```text
+gasStationUrl=http://127.0.0.1:9527
+iotaRpcUrl=https://api.testnet.iota.cafe
+bearerTokenConfigured=true
+ok: Gas Station root HTTP 200 "OK"
+fail: Gas Station /v1/health HTTP 404 {}
+ok: IOTA RPC iota_getLatestCheckpointSequenceNumber HTTP 200
+ok: Gas Station reserve_gas compatibility probe HTTP 200
+```
+
+Compatibility fix discovered during this retry: the official Gas Station returns numeric `reservation_id` values. The gateway and SDK now coerce finite numeric response identifiers to strings before storing/returning them, preserving SDK compatibility while accepting the official upstream shape.
+
+Gateway reserve through the local policy gateway now succeeds against the real Gas Station upstream and returns sponsor address, reservation id, gas coins, and a GasKit transaction id.
+
+A follow-up execute attempt using placeholder transaction bytes/signature reached the official Gas Station but failed at upstream validation with HTTP 422, mapped by the gateway to `GAS_STATION_UNAVAILABLE`. This is expected for placeholder transaction data and confirms the flow is now past the previous reserve/connectivity blocker.
+
+Remaining live-completion requirement: generate a real IOTA testnet transaction for the allowlisted package/function, sign it with a real user key, then submit those real transaction bytes/signature through `executeSponsoredTransaction`. The infrastructure and reserve boundary are now passing.

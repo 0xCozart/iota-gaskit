@@ -21,7 +21,7 @@ function json(response: ServerResponse, status: number, body: unknown) {
   response.end(JSON.stringify(body));
 }
 
-function createMockGasStation() {
+function createMockGasStation(options: { reservationId?: string | number } = {}) {
   const requests: Array<{ method?: string; url?: string; body: unknown; authorization?: string }> = [];
   const server = createServer(async (request: IncomingMessage, response: ServerResponse) => {
     let raw = "";
@@ -37,7 +37,7 @@ function createMockGasStation() {
     if (request.url === "/v1/reserve_gas") {
       json(response, 200, {
         result: {
-          reservation_id: "reservation-1",
+          reservation_id: options.reservationId ?? "reservation-1",
           sponsor_address: "0xSPONSOR",
           gas_coins: [{ objectId: "0xGAS" }],
         },
@@ -63,8 +63,8 @@ async function listen(server: ReturnType<typeof createServer>): Promise<string> 
   return `http://127.0.0.1:${address.port}`;
 }
 
-async function startGateway(configOverrides: Partial<GatewayConfig> = {}) {
-  const upstream = createMockGasStation();
+async function startGateway(configOverrides: Partial<GatewayConfig> = {}, upstreamOptions: { reservationId?: string | number } = {}) {
+  const upstream = createMockGasStation(upstreamOptions);
   const upstreamBaseUrl = await listen(upstream.server);
   const gateway = createGatewayServer({
     apps: {
@@ -281,6 +281,23 @@ test("reserveGas proxies allowed requests and returns SDK-compatible transaction
   assert.equal(fixture.upstream.requests.length, 1);
   assert.equal(fixture.upstream.requests[0]?.url, "/v1/reserve_gas");
   assert.equal(fixture.upstream.requests[0]?.authorization, "Bearer upstream-local-token");
+});
+
+test("reserveGas coerces numeric upstream reservation ids for official Gas Station compatibility", async () => {
+  const fixture = await startGateway({}, { reservationId: 1 });
+  after(() => fixture.close());
+  const client = createGasKitClient({ baseUrl: fixture.gatewayBaseUrl, apiKey: "local-dev-demo-key" });
+
+  const result = await client.reserveGas({
+    gasBudget: 1,
+    reserveDurationSecs: 60,
+    walletAddress: "0xWALLET",
+    packageId: "0xDEMO_PACKAGE",
+    functionName: "mint_badge",
+  });
+
+  assert.equal(result.reservationId, "1");
+  assert.match(result.gasKitTransactionId, /^gaskit_/);
 });
 
 test("executeSponsoredTransaction proxies only a known prior reservation", async () => {

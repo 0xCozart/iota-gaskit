@@ -28,6 +28,7 @@ function asRecord(value: unknown): JsonRecord {
 
 function requireString(value: unknown, fieldPath: string, raw: unknown): string {
   if (typeof value === "string" && value.length > 0) return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
   throw new GasKitError(`Malformed GasKit response: missing ${fieldPath}.`, undefined, raw);
 }
 

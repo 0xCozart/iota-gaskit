@@ -129,7 +129,9 @@ function numberField(record: JsonRecord, key: string): number | undefined {
 
 function stringField(record: JsonRecord, key: string): string | undefined {
   const value = record[key];
-  return typeof value === "string" && value.length > 0 ? value : undefined;
+  if (typeof value === "string" && value.length > 0) return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return undefined;
 }
 
 function hasOwn(record: JsonRecord, key: string): boolean {
