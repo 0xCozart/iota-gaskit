@@ -1,0 +1,217 @@
+# Code Examples
+
+These examples show the intended integration shape. The app backend owns the GasKit API key. Browser code talks to your backend, not directly to IOTA Gas Station and not directly to a sponsor wallet.
+
+## Backend SDK Setup
+
+```ts
+import { createGasKitClient } from "@iota-gaskit/sdk";
+
+const gaskit = createGasKitClient({
+  baseUrl: process.env.GASKIT_GATEWAY_URL!,
+  apiKey: process.env.GASKIT_DEMO_APP_KEY!,
+});
+```
+
+Use a real secret name in your app, such as `GASKIT_API_KEY`. The demo key name is used in this repo because the local example app is named `demo-dapp`.
+
+## Preflight Policy Before Reserving Gas
+
+Use policy simulation when you want to tell the user whether sponsorship is available before creating a reservation.
+
+```ts
+const decision = await gaskit.simulatePolicy({
+  gasBudget: 50_000_000,
+  walletAddress: userAddress,
+  packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
+  functionName: "mint_badge",
+});
+
+if (!decision.allowed) {
+  return {
+    sponsored: false,
+    reasonCode: decision.reasonCode,
+    message: decision.message,
+  };
+}
+```
+
+Simulation uses app authentication and policy checks. It does not reserve sponsor gas, mutate quota counters, submit to IOTA, or emit reserve/execute events.
+
+## Reserve Sponsor Gas
+
+After policy passes and the user is ready to sign, reserve sponsor gas from your backend.
+
+```ts
+const reservation = await gaskit.reserveGas({
+  gasBudget: 50_000_000,
+  reserveDurationSecs: 30,
+  walletAddress: userAddress,
+  packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
+  functionName: "mint_badge",
+});
+
+return {
+  reservationId: reservation.reservationId,
+  gasKitTransactionId: reservation.gasKitTransactionId,
+  sponsorAddress: reservation.sponsorAddress,
+};
+```
+
+Return only the fields your frontend needs. Do not return Gas Station bearer tokens, app API keys, raw upstream bodies, or local secret paths.
+
+## Execute With the User Signature
+
+The user still signs the transaction. Your backend receives the signed transaction bytes/signature and calls GasKit.
+
+```ts
+const result = await gaskit.executeSponsoredTransaction({
+  reservationId,
+  gasKitTransactionId,
+  transactionBytes,
+  userSignature,
+});
+
+return {
+  digest: result.digest,
+};
+```
+
+Do not log raw `transactionBytes` or `userSignature` in the default path. If an operator needs debug logging, keep it behind an explicit secure debug mode outside normal docs and examples.
+
+## Next.js Route Shape
+
+This is the basic server route pattern. The browser calls `/api/gaskit/reserve`; the route calls GasKit with a server-owned key.
+
+```ts
+// app/api/gaskit/reserve/route.ts
+import { createGasKitClient } from "@iota-gaskit/sdk";
+
+const gaskit = createGasKitClient({
+  baseUrl: process.env.GASKIT_GATEWAY_URL!,
+  apiKey: process.env.GASKIT_API_KEY!,
+});
+
+export async function POST(request: Request) {
+  const body = await request.json();
+
+  const reservation = await gaskit.reserveGas({
+    gasBudget: body.gasBudget,
+    reserveDurationSecs: 30,
+    walletAddress: body.walletAddress,
+    packageId: body.packageId,
+    functionName: body.functionName,
+  });
+
+  return Response.json({
+    reservationId: reservation.reservationId,
+    gasKitTransactionId: reservation.gasKitTransactionId,
+    sponsorAddress: reservation.sponsorAddress,
+  });
+}
+```
+
+The maintained example in `examples/nextjs-api-route` adds validation, method checks, safe error mapping, and deterministic tests. Use that example before copying this minimal shape into a real app.
+
+## Browser Caller
+
+The browser sends user-visible metadata to your backend. It does not receive the GasKit app key.
+
+```ts
+const reserveResponse = await fetch("/api/gaskit/reserve", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    gasBudget: 50_000_000,
+    walletAddress: connectedWalletAddress,
+    packageId: "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
+    functionName: "mint_badge",
+  }),
+});
+
+const reservation = await reserveResponse.json();
+```
+
+After the user signs, call your execute route:
+
+```ts
+await fetch("/api/gaskit/execute", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    reservationId: reservation.reservationId,
+    gasKitTransactionId: reservation.gasKitTransactionId,
+    transactionBytes,
+    userSignature,
+  }),
+});
+```
+
+## Gateway Curl Examples
+
+These commands are useful when manually checking a local gateway.
+
+```bash
+curl -i \
+  -X POST http://127.0.0.1:8787/v1/policy/simulate \
+  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
+  -H "content-type: application/json" \
+  -d '{
+    "gas_budget": 50000000,
+    "wallet_address": "0xUSER",
+    "package_id": "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
+    "function_name": "mint_badge"
+  }'
+```
+
+```bash
+curl -i \
+  -X POST http://127.0.0.1:8787/v1/reserve_gas \
+  -H "authorization: Bearer ${GASKIT_DEMO_APP_KEY}" \
+  -H "content-type: application/json" \
+  -d '{
+    "gas_budget": 50000000,
+    "reserve_duration_secs": 30,
+    "wallet_address": "0xUSER",
+    "package_id": "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0",
+    "function_name": "mint_badge"
+  }'
+```
+
+Missing or invalid app credentials should fail before the request reaches IOTA Gas Station.
+
+## Policy YAML Example
+
+The demo policy keeps sponsorship narrow: one app, one package ID, two functions, a max gas budget, per-wallet limits, and an empty denylist.
+
+```yaml
+apps:
+  demo-dapp:
+    api_key_name: demo-dapp-key
+    status: active
+    daily_budget_iota: 10
+    daily_request_limit: 1000
+    max_requests_per_wallet_per_day: 25
+    max_gas_budget_per_tx: 50000000
+    allowed_packages:
+      - "0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0"
+    allowed_functions:
+      - "mint_badge"
+      - "free_trial"
+    denied_wallets: []
+```
+
+## Full Maintained Examples
+
+- `examples/node-backend`: framework-neutral backend handlers with safe response projection.
+- `examples/nextjs-api-route`: Next.js-compatible route helpers with validation and tests.
+- `apps/demo-dapp`: local CLI and browser-wrapper demo flows using the public SDK.
+
+Run the maintained example tests with:
+
+```bash
+node --import tsx --test examples/node-backend/gaskit-backend.test.ts
+node --import tsx --test examples/nextjs-api-route/gaskit-route.test.ts
+npm run smoke:demo-dapp
+npm run smoke:demo-browser
+```

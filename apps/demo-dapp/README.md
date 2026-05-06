@@ -1,8 +1,8 @@
 # GasKit Demo dApp
 
-This app is the deterministic local Milestone 1 demo surface for the public GasKit SDK and policy gateway. It intentionally uses placeholder transaction bytes/signatures and a mock/local gateway path so reviewers can run the browser and CLI proof without real IOTA network access, sponsor keys, Docker, deployment, or private prototype dependencies.
+This app is the deterministic local demo surface for the public GasKit SDK and policy gateway. It intentionally uses placeholder transaction bytes/signatures and a mock/local gateway path so reviewers can run the browser and CLI proof without real IOTA network access, sponsor keys, Docker, deployment, or private prototype dependencies.
 
-## Local grant flow
+## Local flow
 
 The deterministic local flow is:
 

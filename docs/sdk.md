@@ -2,7 +2,7 @@
 
 The SDK helps dApp backends interact with GasKit without hand-writing raw HTTP calls.
 
-## Planned API
+## Backend API Example
 
 ```ts
 import { createGasKitClient } from "@iota-gaskit/sdk";
@@ -40,3 +40,7 @@ const result = await client.executeSponsoredTransaction({
 ```
 
 The API key belongs on the backend, not in browser code. `simulatePolicy()` uses the same authenticated gateway boundary as `reserveGas()`, but a rejected simulation is returned as `{ allowed: false, reasonCode, message }` decision data rather than thrown as `GasKitPolicyError`; auth and malformed transport responses still throw SDK errors.
+
+## More Examples
+
+See [Code Examples](examples.md) for backend routes, browser caller shape, gateway curl commands, and policy YAML.

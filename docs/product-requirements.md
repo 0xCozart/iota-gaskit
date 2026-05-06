@@ -1,11 +1,9 @@
 # Product Requirements Document: IOTA GasKit
 
 Date captured: 2026-04-26
-Working name: IOTA Gas Station-as-a-Service Toolkit
+Working name: IOTA GasKit
 Short name: IOTA GasKit
 Grant category: Open-Source Development
-Recommended grant tier: Tier 2
-Recommended grant ask: $45,000-$50,000; current repo docs target $49,000
 License target: Apache-2.0 for application code; documentation may use permissive documentation terms where appropriate
 Primary repo: `iota-gaskit`
 
@@ -23,7 +21,7 @@ The official IOTA Gas Station component solves the core sponsored-transaction pr
 - monitoring, logging, alerting, security, and hardening docs;
 - a live or recorded demo showing a gasless IOTA transaction flow.
 
-The grant funds the open-source core. A future managed SaaS may later provide hosting, support, compliance help, SLAs, and enterprise onboarding, but the grant deliverables must remain independently deployable, inspectable, forkable, and useful without that hosted service.
+The grant funds the open-source core. A future managed service may later provide hosting, support, compliance help, SLAs, and enterprise onboarding, but the grant deliverables must remain independently deployable, inspectable, forkable, licensed open source, and useful without that hosted service.
 
 ## 2. Problem Statement
 
@@ -71,7 +69,7 @@ The grant-funded MVP will not:
 - custody user funds;
 - provide legal, tax, or compliance services;
 - guarantee mainnet SLAs;
-- launch a fully commercial SaaS billing platform;
+- launch a fully commercial hosted billing platform;
 - create generalized cross-chain gas sponsorship;
 - build wallet software;
 - support every possible cloud provider in v1;
@@ -276,7 +274,7 @@ Acceptance criteria:
 - Public GitHub repo contains a complete README.
 - Docs include a 30-minute quickstart.
 - Demo shows a user executing a sponsored IOTA transaction.
-- Documentation clearly separates open-source toolkit from any future managed SaaS.
+- Documentation clearly separates open-source toolkit from any future managed service.
 
 ## 9. Functional Requirements
 
@@ -497,12 +495,13 @@ Deliverables:
 - architecture diagram;
 - short proof-of-concept video if possible.
 
-### Milestone 1: Local Deployment Kit and Sponsored Transaction Demo
+### Milestone 1: Deployment Kit and Testnet Demo
 
-Duration: 2 weeks. Budget: $10,000.
+Duration: 2 weeks.
 
 Deliverables:
 
+- clean local deployment path;
 - Docker Compose local stack;
 - environment templates;
 - local quickstart README;
@@ -515,10 +514,11 @@ Acceptance criteria:
 - Reviewer can run local stack from clean clone.
 - Demo app completes one sponsored transaction.
 - README documents setup, environment variables, and troubleshooting.
+- Documented testnet demo path is clear.
 
-### Milestone 2: Policy Gateway and Quota Enforcement
+### Milestone 2: Policy Gateway, Quotas, and Abuse Controls
 
-Duration: 3 weeks. Budget: $12,000.
+Duration: 3 weeks.
 
 Deliverables:
 
@@ -526,6 +526,7 @@ Deliverables:
 - app-level quotas;
 - wallet-level limits;
 - package/function allowlists;
+- denylist;
 - structured reason codes;
 - policy config examples;
 - test coverage for policy decisions.
@@ -540,7 +541,7 @@ Acceptance criteria:
 
 ### Milestone 3: TypeScript SDK and Integration Examples
 
-Duration: 2 weeks. Budget: $8,000.
+Duration: 2 weeks.
 
 Deliverables:
 
@@ -548,6 +549,7 @@ Deliverables:
 - typed client wrappers;
 - Next.js integration example;
 - Node.js backend example;
+- package publication or publication-ready artifacts;
 - SDK docs;
 - error-handling examples.
 
@@ -557,10 +559,11 @@ Acceptance criteria:
 - SDK has typed request/response models.
 - Docs show reserve and execute flow.
 - SDK tests pass.
+- Package dry-run or package publication evidence is present.
 
-### Milestone 4: Operator Dashboard and Usage Tracking
+### Milestone 4: Usage Tracking and Lightweight Operator Dashboard
 
-Duration: 3 weeks. Budget: $12,000.
+Duration: 3 weeks.
 
 Deliverables:
 
@@ -570,7 +573,7 @@ Deliverables:
 - wallet usage view;
 - recent transaction/rejection log;
 - quota usage display;
-- CSV export.
+- basic export or logs.
 
 Acceptance criteria:
 
@@ -580,9 +583,9 @@ Acceptance criteria:
 - Dashboard shows successful and failed transactions.
 - Dashboard redacts secrets.
 
-### Milestone 5: Production Hardening, Observability, Documentation, and Final Demo
+### Milestone 5: Hardening, Observability Docs, and Final Demo
 
-Duration: 2 weeks. Budget: $7,000.
+Duration: 2 weeks.
 
 Deliverables:
 
@@ -591,7 +594,7 @@ Deliverables:
 - monitoring and alerting templates;
 - KMS notes;
 - contribution guide;
-- final demo video;
+- final walkthrough/demo;
 - roadmap;
 - grant completion report.
 
@@ -602,22 +605,11 @@ Acceptance criteria:
 - Final demo proves end-to-end usage.
 - Repo is ready for community contributions.
 
-Budget summary:
-
-| Milestone | Amount |
-| --- | ---: |
-| M1 Deployment Kit and Demo | $10,000 |
-| M2 Policy Gateway and Quotas | $12,000 |
-| M3 SDK and Examples | $8,000 |
-| M4 Dashboard and Usage Tracking | $12,000 |
-| M5 Hardening, Docs, Final Demo | $7,000 |
-| Total | $49,000 |
-
 ## 16. Risks and Mitigations
 
-### Risk: project looks like a private SaaS wrapper
+### Risk: project looks like a private hosted-service wrapper
 
-Mitigation: make deliverables fully open source, independently deployable, and valuable without a future hosted SaaS.
+Mitigation: make deliverables fully open source, independently deployable, and valuable without a future managed service.
 
 ### Risk: security concerns around sponsoring transactions
 
@@ -664,7 +656,6 @@ iota-gaskit/
     sdk.md
     threat-model.md
     production-hardening.md
-    grant-milestones.md
   examples/
     nextjs-api-route/
     node-backend/
@@ -714,7 +705,7 @@ Who benefits:
 
 Why this deserves grant funding:
 
-The project creates ecosystem-wide public goods. The grant does not fund a closed SaaS; it funds reusable open-source infrastructure that any IOTA builder can deploy, inspect, fork, or extend.
+The project creates ecosystem-wide public goods. The grant does not fund a closed hosted product; it funds reusable open-source infrastructure that any IOTA builder can deploy, inspect, fork, or extend.
 
 ## 19. Demo Scenario
 
@@ -742,7 +733,7 @@ Before submitting the grant application:
 - [ ] Architecture diagram.
 - [ ] Milestone table with budget.
 - [ ] Local setup instructions.
-- [ ] Clear distinction between open-source grant scope and future SaaS.
+- [ ] Clear distinction between open-source grant scope and future managed service.
 - [ ] Basic proof-of-concept branch or demo scaffold.
 - [ ] Grant application draft.
 - [ ] Demo video outline.
@@ -805,7 +796,7 @@ Use this framing:
 
 Avoid this framing:
 
-- private SaaS wrapper;
+- private hosted-service wrapper;
 - pay me to build my startup;
 - closed-source monetization play;
 - generic Web3 infrastructure with no IOTA-specific value;

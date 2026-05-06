@@ -4,6 +4,8 @@ Fail-closed sponsorship policy evaluation helpers for IOTA GasKit gateways.
 
 ## Install
 
+Status: this package is a workspace package today and is not claimed as published to npm yet. Use the monorepo workspace for local review. After M3 publication, install from npm:
+
 ```sh
 npm install @iota-gaskit/policy-gateway @iota-gaskit/shared-types
 ```

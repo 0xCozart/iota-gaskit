@@ -15,7 +15,7 @@ The IOTA GasKit grant funds open-source ecosystem infrastructure.
 
 ## Out of scope for grant MVP
 
-- hosted SaaS billing;
+- hosted-service billing;
 - commercial SLAs;
 - enterprise SSO;
 - legal/compliance services;

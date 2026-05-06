@@ -20,7 +20,7 @@ Make the project credible for IOTA Foundation review without overclaiming grant 
 
 A reviewer should be able to verify:
 
-- open-source toolkit framing rather than a private SaaS submission;
+- open-source toolkit framing rather than a private hosted-service submission;
 - Apache-2.0 licensing and contribution/security hygiene;
 - clear separation between grant-funded public-good code and future managed-service options;
 - a realistic architecture and milestone budget;
@@ -57,6 +57,6 @@ Those are planned grant milestone deliverables.
 ## Remaining path
 
 1. Use `docs/reviewer-walkthrough.md` for reviewer orientation.
-2. Submit the grant package with `docs/grant-application.md` and `docs/grant-milestones.md`.
+2. Submit the grant package with `docs/grant-application.md` and the roadmap details in `docs/product-requirements.md`.
 3. Package the reviewer-operated local deployment/testnet path so a clean clone can reproduce the sponsored transaction with their own credentials.
 4. Continue extracting proven pieces from the external source prototype only after each piece is scrubbed, tested, and framed as open-source toolkit functionality.

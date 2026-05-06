@@ -1,5 +1,45 @@
 # Architecture
 
+GasKit is intentionally split into small layers. The goal is to let an app sponsor IOTA gas without putting sponsor-wallet risk directly into frontend code or one-off backend glue.
+
+The plain-English shape is:
+
+```text
+User action
+  -> app backend
+  -> GasKit SDK or Policy Gateway
+  -> official IOTA Gas Station
+  -> IOTA network
+```
+
+The app backend owns the user experience. GasKit owns app-level sponsorship checks. IOTA Gas Station owns sponsor gas reservation and sponsored execution. IOTA owns final transaction validation.
+
+## Why This Architecture
+
+### Keep Sponsor Secrets Away From Browsers
+
+Browser and mobile code are public by default. Anything embedded there can be copied. A sponsor wallet or Gas Station bearer token must stay on a trusted backend. GasKit therefore treats browser flows as thin clients that call same-origin backend routes.
+
+### Check Policy Before Spending Gas
+
+The official Gas Station can sponsor transactions, but the app still needs to decide which requests deserve sponsorship. GasKit adds a policy gateway before the Gas Station so requests can fail closed on missing auth, unknown apps, blocked wallets, package mismatches, function mismatches, or gas-budget limits.
+
+### Make Sponsorship Explainable
+
+Operators need to know what happened without leaking secrets. GasKit emits sanitized decision events: app ID, operation, outcome, reason code, package/function metadata, wallet address, and safe request identifiers. It does not emit app keys, bearer tokens, raw transaction bytes, user signatures, or raw upstream error bodies.
+
+### Separate Local Proof From Live Network Risk
+
+Most docs and tests should run without live IOTA services, sponsor keys, Docker, Redis, or testnet funds. That makes review repeatable and keeps secrets local. Live testnet execution is documented separately because it contacts real services and spends sponsor gas.
+
+### Stay Self-Hostable
+
+The official IOTA Gas Station is a self-hosted building block. GasKit follows that model. The current project is an open-source toolkit and service foundation, not a closed managed sponsor service.
+
+## Component Map
+
+![IOTA GasKit architecture](docs/assets/iota-gaskit-architecture.svg)
+
 ```mermaid
 flowchart LR
   Demo[Demo dApp] --> SDK[TypeScript SDK]
@@ -13,12 +53,48 @@ flowchart LR
 
 ## Components
 
-- IOTA Gas Station: official sponsored-transaction component.
-- GasKit Policy Gateway: validates app credentials, policy, quotas, and metadata before proxying to Gas Station.
-- GasKit Usage Store: stores sanitized app config, policy decisions, and usage events.
-- TypeScript SDK: typed wrapper for dApp backends.
-- Operator Dashboard: health, usage, policy, and rejection visibility.
-- Demo dApp: reviewer-verifiable sponsored transaction flow.
+- Demo dApp: a small app used to prove the integration path locally.
+- TypeScript SDK: a typed wrapper that app backends use instead of hand-writing HTTP calls.
+- GasKit Policy Gateway: validates app credentials, package/function policy, wallet limits, gas budgets, and request shape before proxying to Gas Station.
+- Usage Store: records sanitized decision events and usage aggregates for local proof and future dashboard work.
+- IOTA Gas Station: the official sponsored-transaction component that manages sponsor-owned gas objects.
+- IOTA RPC: the IOTA network endpoint used by Gas Station to submit or inspect transactions.
+- Operator Dashboard: planned health, usage, policy, and rejection visibility built on the sanitized event foundation.
+
+## Request Lifecycle
+
+1. The user starts an action in the app.
+2. The app backend builds or describes the intended transaction.
+3. The backend calls GasKit, usually through the SDK.
+4. GasKit authenticates the app key and checks sponsorship policy.
+5. If the request is not allowed, GasKit returns a bounded rejection reason.
+6. If the request is allowed, GasKit reserves sponsor gas through IOTA Gas Station.
+7. The user signs the transaction payload.
+8. GasKit executes the sponsored transaction path with the user signature and reservation.
+9. GasKit emits sanitized decision events for usage and troubleshooting.
+
+## Trust Boundaries
+
+| Boundary | Why it exists | GasKit default |
+| --- | --- | --- |
+| Browser to backend | Browser code is inspectable and cannot protect sponsor secrets. | Keep app keys and Gas Station bearer tokens server-side. |
+| Backend to GasKit | Apps need authenticated sponsorship, not open public spend. | Require app credentials before policy evaluation. |
+| GasKit to Gas Station | The sponsor wallet can spend funded gas. | Apply allowlists, budgets, wallet controls, and bounded errors before proxying. |
+| GasKit to logs/events | Observability is useful, but raw payloads can leak secrets. | Emit allowlisted sanitized fields only. |
+| Local proof to live testnet | Local checks should be repeatable without funded credentials. | Keep live testnet commands separate from `verify:local`. |
+
+## Why Not Call IOTA Gas Station Directly?
+
+For experiments, a direct backend call can work. For an app, the direct path leaves repeated work and risk:
+
+- every app has to invent its own auth boundary;
+- package and function allowlists are easy to forget;
+- wallet and quota controls drift across integrations;
+- upstream errors may leak too much detail;
+- operators have no consistent usage record;
+- browser teams may accidentally expose sponsor credentials.
+
+GasKit centralizes those concerns so a team can start from safer defaults.
 
 ## Local decision events and usage read model
 

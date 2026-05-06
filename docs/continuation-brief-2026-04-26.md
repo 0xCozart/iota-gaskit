@@ -47,14 +47,16 @@ Latest local proof documents are:
 The latest documented full local command is:
 
 ```bash
-npm run grant:check
+npm run verify:local
 ```
 
-`grant:check` expands to:
+`verify:local` expands to:
 
 ```text
-npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run secrets:scan
+npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan
 ```
+
+`grant:check` remains available as a compatibility alias for grant-reviewer workflows.
 
 The current reviewer/proof docs also include guard tests in `scripts/reviewer-docs.test.ts` so stale proof claims fail the root `npm test` command.
 
@@ -95,13 +97,13 @@ Current local `npm test` evidence is documented in `docs/milestone-0-proof.md` a
 
 ### `/mnt/d/CURSOR/gas_station`
 
-This is the private/incubator prototype. It includes SaaS-shaped GaaS product material such as Express backend patterns, API-key auth, quota/reservation ideas, billing/dashboard concepts, Docker/NGINX/monitoring assets, and partial widget implementation.
+This is the private/incubator prototype. It includes hosted-service-shaped GaaS product material such as Express backend patterns, API-key auth, quota/reservation ideas, billing/dashboard concepts, Docker/NGINX/monitoring assets, and partial widget implementation.
 
 Use it as source material only. Do not publish or copy wholesale without scrubbing.
 
 Reasons:
 
-- It is SaaS-shaped rather than grant-toolkit-shaped.
+- It is hosted-service-shaped rather than grant-toolkit-shaped.
 - It can contain local sensitive-looking sponsor/recovery/config material in working-tree files; values must stay redacted and should be rotated if ever real.
 - Git state may not be a clean public repo state.
 - It can contain build/runtime artifacts that should not be extracted into the clean repo.
@@ -111,7 +113,7 @@ Best use:
 - Extract gateway/proxy concepts only when they can be minimized, scrubbed, tested, and reframed as open-source toolkit functionality.
 - Extract quota/reservation patterns after correcting race/mainnet-safety issues.
 - Extract dashboard/monitoring ideas after the public repo has a safe durable usage boundary.
-- Extract Docker/NGINX/Grafana patterns only after removing secrets and SaaS-only assumptions.
+- Extract Docker/NGINX/Grafana patterns only after removing secrets and hosted-service-only assumptions.
 
 ### `/mnt/d/CURSOR/gaas-embeddable-widget-plan`
 
@@ -153,5 +155,5 @@ Do not merge wholesale. Adapt only observability/status patterns after GasKit ha
 - Treat `/mnt/d/CURSOR/gas_station` as private/incubator source only.
 - Do not copy secrets, `.env` values, sponsor keys, recovery material, local config values, billing credentials, or private prototype code.
 - Keep all default slices deterministic and local-only: mock upstream, loopback services, no real IOTA/testnet network calls, no Docker requirement, and no sponsor keys.
-- Keep grant scope distinct from future managed SaaS features.
+- Keep grant scope distinct from future managed-service features.
 - After each completed slice, audit for mistakes, second-order effects, and edge cases; improve confirmed issues; then continue to the next smallest safe slice.

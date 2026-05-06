@@ -8,17 +8,28 @@
 
 Open-Source Development
 
-## Recommended grant tier
-
-Tier 2
-
-## Recommended ask
-
-**$49,000**
-
 ## License
 
 Apache-2.0 for application code and repository assets unless otherwise noted. Documentation may also be made available under permissive documentation terms if required by the grant process.
+
+## Reviewer quick verification
+
+From a clean clone:
+
+```bash
+npm install
+npm run grant:check
+```
+
+`npm run grant:check` is deterministic/offline. It runs tests, typecheck, local gateway and demo smokes, example testnet-readiness preflight, package dry-runs, and tracked-file secret scanning. It does not require sponsor keys, live IOTA RPC, Docker, npm registry credentials, or a running Gas Station.
+
+Optional live testnet proof:
+
+```bash
+npm run execute:testnet-demo
+```
+
+This requires operator-owned local credentials and a reachable IOTA Gas Station/testnet setup. A prior public IOTA testnet sponsored execute has already been documented with digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`; see `docs/milestone-0-proof.md` and `docs/testnet-attempts.md`.
 
 ## One-line pitch
 
@@ -60,7 +71,7 @@ IOTA already has the core Gas Station component. GasKit adds reusable open-sourc
 - hardening and threat-model documentation;
 - grant-verifiable demo assets.
 
-This positions the project as ecosystem infrastructure rather than a private SaaS wrapper.
+This positions the project as ecosystem infrastructure rather than a private hosted wrapper.
 
 ## What the grant funds
 
@@ -72,7 +83,21 @@ The grant funds the open-source core:
 4. Operator Dashboard and Usage Tracking.
 5. Production Hardening, Observability, Documentation, and Final Demo.
 
-The grant does **not** fund a closed managed SaaS. A future managed service may offer hosting, support, compliance help, SLAs, and enterprise onboarding, but the grant deliverables remain independently deployable and open source.
+The grant does **not** fund billing, enterprise SLAs, proprietary hosting, or closed managed-service features. A future managed service may offer hosting, support, compliance help, SLAs, and enterprise onboarding, but the grant deliverables remain self-hostable, inspectable, forkable, independently useful, and licensed open source.
+
+## Maintainer and delivery credibility
+
+IOTA GasKit is maintained and built by 0xCozart as an open-source infrastructure project for IOTA sponsored-transaction adoption. The current work demonstrates full-stack TypeScript, Node service, SDK, policy, test automation, security documentation, and operator-readiness experience.
+
+Proof already completed includes deterministic local gateway/SDK/demo tests, policy simulation, usage-event foundations, package dry-runs, tracked-file secret scanning, and one documented real sponsored IOTA testnet execute through the local gateway and Gas Station.
+
+Expected delivery capacity is one focused maintainer-led implementation track with milestone-sized review artifacts. The grant plan is scoped to incremental open-source deliverables that can be verified from this repo rather than to a broad hosted product launch.
+
+## Duplicate funding and conflicts
+
+To the maintainer's current knowledge, the grant work described here is not currently funded by another grant, employer, or customer contract. Any material conflicts of interest or overlapping funding will be disclosed to reviewers.
+
+The open-source grant deliverables remain independently deployable and useful without any future managed service.
 
 ## Why this matters for IOTA
 
@@ -99,6 +124,10 @@ A clean public repository has been scaffolded from a working GaaS prototype and 
   - `@iota-gaskit/shared-types`
   - `@iota-gaskit/policy-gateway`
   - `@iota-gaskit/sdk`
+- Package publication status:
+  - actual npm publication is not claimed as complete today;
+  - packages have prerelease metadata and dry-run packaging checks;
+  - publication, or final publication-ready artifacts if registry access is unavailable during review, is an M3 deliverable.
 - Current local proof surfaces:
   - runnable local policy gateway smoke path with a mock upstream;
   - authenticated local policy simulation preflight;
@@ -112,7 +141,7 @@ A clean public repository has been scaffolded from a working GaaS prototype and 
 
 Local verification from the grant-readiness sprint:
 
-- `npm test`: 118 deterministic tests passed, 0 failed before final grant-readiness polish.
+- `npm test`: 132 deterministic tests passed, 0 failed after grant-readiness polish.
 - `npm run typecheck`: passed.
 - `npm run smoke:local`: local gateway smoke passed.
 - `npm run grant:check`: passed locally across tests, typecheck, smokes, offline readiness example, package dry-run checks, and tracked-file secret scan.
@@ -121,17 +150,15 @@ Local verification from the grant-readiness sprint:
 
 The current public repo now claims a real sponsored testnet execute proof. It does not yet claim production usage storage, operator dashboard UI, production monitoring, package publication, production KMS/signer integration, or final demo video assets. The original prototype proved additional implementation capability such as Express gateway, API-key authentication, quota tracking, transaction logging, dashboard UI, Docker deployment, and Prometheus/Grafana monitoring; grant work turns those proven pieces into a clean open-source toolkit.
 
-## Milestones and budget
+## Milestones
 
-| Milestone | Duration | Budget | Deliverables | Reviewer verification |
-| --- | ---: | ---: | --- | --- |
-| M1 Deployment Kit and Demo | 2 weeks | $10,000 | Docker Compose local stack, env templates, testnet guide, health checks, sponsored transaction demo | Reviewer can run clean clone and execute one sponsored testnet transaction |
-| M2 Policy Gateway and Quotas | 3 weeks | $12,000 | App keys, app quotas, wallet limits, package/function allowlists, denylist, reason codes, policy tests | Unauthorized/over-quota/non-allowlisted requests are rejected with structured reasons |
-| M3 SDK and Examples | 2 weeks | $8,000 | TypeScript SDK, typed wrappers, Next.js route example, Node backend example, SDK docs/tests | SDK can reserve and execute through demo app; SDK tests pass |
-| M4 Dashboard and Usage Tracking | 3 weeks | $12,000 | Operator dashboard, app usage, wallet usage, recent execution/rejection logs, quota views, CSV export | Dashboard shows app/wallet/status dimensions and redacts secrets |
-| M5 Hardening, Observability, Final Demo | 2 weeks | $7,000 | Threat model, production guide, monitoring/alerts, KMS notes, contribution docs, final demo video | Final walkthrough proves happy path and rejection path |
-
-**Total ask: $49,000**
+| Milestone | Duration | Deliverables | Reviewer verification |
+| --- | ---: | --- | --- |
+| M1 Deployment Kit and Testnet Demo | 2 weeks | Docker Compose local stack, env templates, testnet guide, health checks, sponsored transaction demo | Reviewer can run clean clone and execute one sponsored testnet transaction |
+| M2 Policy Gateway, Quotas, and Abuse Controls | 3 weeks | App keys, app quotas, wallet limits, package/function allowlists, denylist, reason codes, policy tests | Unauthorized/over-quota/non-allowlisted requests are rejected with structured reasons |
+| M3 SDK, Examples, and Package Publication | 2 weeks | TypeScript SDK, typed wrappers, Next.js route example, Node backend example, package publication or publication-ready artifacts | SDK tests pass, examples run, package dry-run or package publication evidence is present |
+| M4 Usage Tracking and Lightweight Operator Dashboard | 3 weeks | Operator dashboard, app usage, wallet usage, recent execution/rejection logs, quota views, CSV export | Dashboard shows app/wallet/status dimensions and redacts secrets |
+| M5 Hardening, Observability Docs, and Final Demo | 2 weeks | Threat model, production guide, monitoring/alerts, KMS notes, contribution docs, final demo video | Final walkthrough proves happy path and rejection path |
 
 ## Success criteria
 
@@ -149,7 +176,7 @@ By completion, reviewers should be able to verify:
 
 ## Risks and mitigations
 
-### Risk: project looks like private SaaS fundraising
+### Risk: project looks like private hosted-service fundraising
 
 Mitigation: the repo and grant scope explicitly focus on the open-source toolkit. Managed hosting is documented separately as a future sustainability path, not the grant deliverable.
 

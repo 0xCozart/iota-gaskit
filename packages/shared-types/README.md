@@ -4,6 +4,8 @@ Shared TypeScript policy and request/decision types for IOTA GasKit packages.
 
 ## Install
 
+Status: this package is a workspace package today and is not claimed as published to npm yet. Use the monorepo workspace for local review. After M3 publication, install from npm:
+
 ```sh
 npm install @iota-gaskit/shared-types
 ```

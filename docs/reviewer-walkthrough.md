@@ -4,6 +4,27 @@ Date: 2026-05-05
 
 Purpose: give grant reviewers a short, reproducible path through the IOTA GasKit repo while clearly separating deterministic local proof and documented live testnet evidence from remaining production milestone work.
 
+## Reviewer quick verification
+
+Run from a clean clone:
+
+```bash
+npm install
+npm run grant:check
+```
+
+Expected result: `npm run grant:check` completes deterministic/offline tests, TypeScript checking, local gateway and demo smokes, example testnet-readiness preflight, package dry-runs, and tracked-file secret scanning. It does not require live testnet credentials.
+
+Optional live proof:
+
+```bash
+npm run execute:testnet-demo
+```
+
+Expected result: with operator-owned local credentials and a reachable IOTA Gas Station/testnet setup, this submits a sponsored transaction. This command is intentionally excluded from the deterministic grant check because it contacts live services and consumes sponsored testnet gas.
+
+Documented public IOTA testnet evidence already in the repo: digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H` in `docs/milestone-0-proof.md` and `docs/testnet-attempts.md`.
+
 ## 1. Start with the thesis
 
 Read:
@@ -11,6 +32,7 @@ Read:
 - `README.md`
 - `docs/grant-scope.md`
 - `docs/managed-service-roadmap.md`
+- `docs/team.md`
 
 What to verify:
 
@@ -146,14 +168,13 @@ Read:
 - `docs/product-requirements.md`
 - `docs/continuation-brief-2026-04-26.md`
 - `docs/grant-application.md`
-- `docs/grant-milestones.md`
 - `docs/milestone-0-proof.md`
 - `docs/demo-script.md`
 - `docs/reviewer-checklist.md`
 
 What to verify:
 
-- the recommended Tier 2 ask is tied to concrete deliverables;
+- the open-source roadmap is tied to concrete deliverables;
 - current deterministic proof is strong and the real testnet execute evidence is documented;
 - remaining milestones are measurable: durable usage store, dashboard, monitoring/alerts, package release operations, and final demo assets.
 

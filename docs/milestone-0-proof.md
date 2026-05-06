@@ -36,7 +36,6 @@ Grant-facing docs:
 - `docs/product-requirements.md`
 - `docs/continuation-brief-2026-04-26.md`
 - `docs/grant-application.md`
-- `docs/grant-milestones.md`
 - `docs/grant-scope.md`
 - `docs/reviewer-checklist.md`
 - `docs/reviewer-walkthrough.md`
@@ -76,23 +75,25 @@ Install dependencies:
 npm install
 ```
 
-Run the current full local grant check:
+Run the current full local verification:
 
 ```bash
-npm run grant:check
+npm run verify:local
 ```
 
-`grant:check` currently expands to:
+`verify:local` currently expands to:
 
 ```text
-npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run secrets:scan
+npm test && npm run typecheck && npm run smoke:local && npm run smoke:demo-dapp && npm run smoke:demo-browser && npm run readiness:testnet:example && npm run pack:check && npm run docs:check && npm run secrets:scan
 ```
+
+`grant:check` remains as a compatibility alias for grant-reviewer workflows.
 
 Latest local `npm test` result:
 
 ```text
-tests 118
-pass 118
+tests 132
+pass 132
 fail 0
 cancelled 0
 skipped 0

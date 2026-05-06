@@ -1,8 +1,8 @@
 # 30-Minute Quickstart
 
-Status: Milestone 1 in progress. The current repo now includes runnable local policy gateway and demo dApp smoke paths. The full sponsored testnet transaction demo still requires a local or testnet IOTA Gas Station upstream.
+This quickstart starts with deterministic local proof paths that do not need Docker, sponsor keys, testnet funds, live IOTA RPC, or a running IOTA Gas Station. Use those checks first, then move to the live testnet path only after local configuration is ready.
 
-Goal: a developer can clone the repo, start a local GasKit stack, open the demo dApp, and execute one sponsored testnet transaction within 30 minutes.
+Goal: a developer can clone the repo, verify the policy gateway and demo dApp locally, understand the secret boundary, and know exactly what is still required for a live sponsored testnet transaction.
 
 ## Current scaffold checks
 
@@ -199,11 +199,13 @@ curl -i \
   -d '{"gas_budget":1,"wallet_address":"0xWALLET","package_id":"0x9b936476bb6a4b88d7c1dd84643f4bdced3cc6cad351e288fc95d1033f05d8f0","function_name":"mint_badge"}'
 ```
 
-Expected result: the request is proxied to `GAS_STATION_URL/v1/reserve_gas`; the response includes the upstream `result.reservation_id` plus a gateway-local `_saas_tx_id` / `gasKitTransactionId` used later by `/v1/execute_tx`.
+Expected result: the request is proxied to `GAS_STATION_URL/v1/reserve_gas`; the response includes the upstream `result.reservation_id` plus a gateway-local `gasKitTransactionId` used later by `/v1/execute_tx`.
 
 If no upstream Gas Station is running, the gateway returns `GAS_STATION_UNAVAILABLE`. The current gateway keeps reservations in memory for local smoke use only; restart the service to clear local reservation state.
 
-## Milestone 1 target flow
+## Target live testnet flow
+
+The live flow requires operator-owned local credentials and a reachable IOTA Gas Station upstream. It is intentionally separate from the deterministic smoke commands because it contacts live services and consumes sponsored testnet gas.
 
 1. Copy `.env.example` to `.env`.
 2. Add testnet sponsor wallet values locally.
