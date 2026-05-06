@@ -8,8 +8,8 @@
     ],
     "executionTruth": [
       "docs/continuation-brief-2026-04-26.md",
-      "docs/grant-milestones.md",
-      "docs/milestone-0-proof.md"
+      "docs/milestone-0-proof.md",
+      "docs/reviewer-walkthrough.md"
     ],
     "workflowRules": [
       "AGENTS.md"
