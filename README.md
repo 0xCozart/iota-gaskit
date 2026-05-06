@@ -6,7 +6,7 @@ IOTA GasKit helps IOTA builders deploy, secure, monitor, and integrate sponsored
 
 It is designed for teams building IOTA dApps, enterprise workflows, identity products, notarization systems, RWA/product-passport apps, supply-chain tools, games, wallets, and hackathon demos where users should not need to acquire IOTA tokens before experiencing product value.
 
-> **Grant scope:** this repository is the open-source toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the grant-funded core remains independently deployable, inspectable, forkable, and useful without any hosted SaaS.
+> **Open-source scope:** this repository is the self-hostable toolkit. A future managed service may offer hosting, support, SLAs, and enterprise onboarding, but the core project remains independently deployable, inspectable, forkable, licensed open source, and useful without hosted GasKit.
 
 ## One-line pitch
 
@@ -27,23 +27,22 @@ Production teams still need the surrounding operator and developer layer:
 - SDK helpers and backend integration examples;
 - dashboard views for app keys, usage, health, and errors;
 - sponsor-wallet, Redis, reverse-proxy, and KMS hardening guidance;
-- grant-reviewable demos and documentation;
+- reproducible demos and documentation;
 - a real IOTA testnet sponsored execute script with documented public transaction digest evidence.
 
 GasKit packages those pieces into a reusable open-source toolkit so every IOTA builder does not have to recreate the same safety and operations layer.
 
 ## What is in this repo now
 
-This repository is currently in **grant-readiness sprint** mode. It is a clean public scaffold informed by an external working GaaS proof-of-concept that demonstrated an Express gas sponsorship gateway, API-key auth, quota tracking, transaction logging, dashboard UI, Docker deployment shape, and monitoring assets.
+This repository contains the open-source GasKit toolkit: a tested policy gateway, TypeScript SDK, local demo flows, integration examples, deployment templates, security docs, observability foundations, and documented IOTA testnet sponsored-execution evidence.
 
-Those prototype items are external evidence only. This public repo now includes a real testnet sponsored-transaction demo path, while still treating dashboard UI, production monitoring, production persistence, package publication, and final video assets as remaining milestone work.
+Some production surfaces remain planned roadmap work, including the full dashboard UI, production persistence, production monitoring, package publication, and final demo assets.
 
-The clean grant repo itself now includes:
+The repo currently includes:
 
 - Apache-2.0 license;
 - contribution and security policies;
 - issue and pull request templates;
-- grant scope and managed-service separation docs;
 - policy reason-code/shared type scaffold;
 - policy gateway decision engine scaffold with tests and a local policy simulation endpoint;
 - TypeScript SDK scaffold with tests;
@@ -53,7 +52,7 @@ The clean grant repo itself now includes:
 - policy YAML example;
 - architecture diagram and architecture docs;
 - threat model and production hardening docs;
-- grant milestone plan, reviewer checklist, and demo script.
+- reviewer checklist and demo script.
 
 ## Current proof status
 
@@ -61,12 +60,12 @@ The current scaffold verifies successfully locally:
 
 ```bash
 npm install
-npm run grant:check
+npm run verify:local
 ```
 
 Latest local verification:
 
-- `npm test`: 118 deterministic package/app/script/example/reviewer-doc/usage-store/operator-usage/readiness/package-publish/live-execute compatibility tests passed locally before this final grant-readiness polish.
+- `npm test`: 132 deterministic package/app/script/example/reviewer-doc/usage-store/operator-usage/readiness/package-publish/live-execute compatibility tests passed locally after the latest documentation and API cleanup.
 - `npm run typecheck`: passed locally.
 - `npm run smoke:local`: deterministic local gateway smoke passed locally, including policy simulation, sanitized event, local usage read-model, file-backed usage event-store replay, and authenticated local operator usage API checks.
 - `npm run smoke:demo-dapp`: deterministic local demo dApp smoke passed locally.
@@ -74,9 +73,9 @@ Latest local verification:
 - `npm run readiness:testnet:example`: deterministic example testnet-readiness preflight passed locally.
 - `npm run pack:check`: workspace package dry-runs completed locally.
 - `npm run execute:testnet-demo`: real sponsored IOTA testnet execute succeeded through the local policy gateway and Gas Station; public digest `2Db6NiwZdR26JenPkWMFno7QgMePwhQ6rQQTA6jDJa7H`.
-- secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run grant:check`.
+- secret-oriented scan over tracked project files is wired into `npm run secrets:scan` and `npm run verify:local`.
 
-See `docs/milestone-0-proof.md` for exact evidence.
+See `docs/testnet-attempts.md` and `docs/reviewer-walkthrough.md` for exact evidence.
 
 ## Target architecture
 
@@ -98,7 +97,7 @@ flowchart LR
 
 ```txt
 apps/
-  demo-dapp/              # Minimal grant-demo dApp local CLI/browser wrapper
+  demo-dapp/              # Minimal local dApp CLI/browser wrapper
   policy-gateway-service/ # Runnable local policy gateway smoke service
 packages/
   sdk/                    # TypeScript SDK scaffold
@@ -113,10 +112,6 @@ docs/
   deployment.md
   product-requirements.md
   continuation-brief-2026-04-26.md
-  grant-application.md
-  grant-milestones.md
-  grant-scope.md
-  milestone-0-proof.md
   reviewer-walkthrough.md
   observability.md
   policy.md
@@ -134,7 +129,7 @@ examples/
 
 ## Packages
 
-The monorepo root is marked `private` to prevent accidental publication of the workspace root. Package-level publishing remains a later milestone action, but the current workspace packages now have package READMEs, public prerelease publish metadata (`access=public`, `tag=next`), map-free packed artifacts, and local `npm pack --dry-run` verification for publishable packages.
+The monorepo root is marked `private` to prevent accidental publication of the workspace root. The workspace packages are not claimed as published yet. Package release remains roadmap work; today the repo provides package READMEs, public prerelease publish metadata (`access=public`, `tag=next`), map-free packed artifacts, and local `npm pack --dry-run` verification for publishable packages.
 
 Dry-run package checks:
 
@@ -178,19 +173,41 @@ Current SDK supports request construction for:
 
 It also includes typed error classes for auth, policy, and malformed-response failures.
 
-## Grant milestones
+## Documentation site
 
-Recommended Tier 2 grant ask: **$49,000**.
+GasKit includes a static docs site generated from the canonical Markdown files in this repo. The generated HTML is a hosting artifact; update the Markdown sources instead of editing `apps/docs-site/dist` directly.
 
-| Milestone | Budget | Outcome |
-| --- | ---: | --- |
-| M1 Deployment Kit and Demo | $10,000 | Clean local stack and sponsored transaction demo |
-| M2 Policy Gateway and Quotas | $12,000 | App keys, quotas, wallet limits, package/function allowlists, reason codes |
-| M3 SDK and Examples | $8,000 | TypeScript SDK, Next.js example, Node backend example |
-| M4 Dashboard and Usage Tracking | $12,000 | Operator dashboard with app/wallet/rejection/usage views |
-| M5 Hardening, Observability, Final Demo | $7,000 | Threat model, monitoring, alerts, hardening docs, final video |
+Build the site:
 
-See `docs/grant-milestones.md`. Reviewers can start with `docs/reviewer-walkthrough.md`.
+```bash
+npm run docs:build
+```
+
+Preview locally:
+
+```bash
+npm run docs:serve
+```
+
+Recommended static-host settings:
+
+- build command: `npm run docs:build`
+- output directory: `apps/docs-site/dist`
+- Node version: `20`
+
+## Agent access
+
+AI coding agents should start with the repo-local GasKit skill at `skills/iota-gaskit/SKILL.md`. It gives agents the source map, Apex workflow expectations, safe verification ladder, and sponsor-gas boundaries for GasKit work.
+
+The hosted agent guide is `docs/agent-guide.md`.
+
+## Roadmap
+
+- Clean local deployment path with reviewed environment templates and health checks.
+- Expanded policy controls for app credentials, wallet limits, package/function allowlists, denylists, quotas, and structured reason codes.
+- TypeScript SDK release workflow, Next.js example, Node backend example, and publication-ready package artifacts.
+- Usage event store, operator usage views, rejection views, health views, quota views, and basic export/log tooling.
+- Hardening guide, observability docs, alerting templates, and final walkthrough assets.
 
 ## Quickstart preview
 
@@ -231,7 +248,7 @@ See:
 
 ## Open-source vs future managed service
 
-The grant funds reusable public-good infrastructure. The open-source toolkit must remain useful to any IOTA builder who wants to self-host.
+The open-source toolkit is designed to remain useful to any IOTA builder who wants to self-host.
 
 A future managed service may later provide:
 
@@ -242,7 +259,7 @@ A future managed service may later provide:
 - SLA-backed monitoring;
 - compliance exports.
 
-Those managed-service features are not required for the grant MVP. See `docs/managed-service-roadmap.md`.
+Those managed-service features are separate from the self-hostable open-source core. See `docs/managed-service-roadmap.md`.
 
 ## License
 

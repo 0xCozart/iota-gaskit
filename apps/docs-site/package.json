@@ -1,0 +1,16 @@
+{
+  "name": "@iota-gaskit/docs-site",
+  "version": "0.0.0-prerelease",
+  "private": true,
+  "description": "Static documentation site for IOTA GasKit.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check",
+    "serve": "node scripts/serve.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
