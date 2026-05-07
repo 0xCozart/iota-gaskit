@@ -83,7 +83,7 @@ See `docs/testnet-attempts.md` and `docs/reviewer-walkthrough.md` for exact evid
 
 [Gasless ProofDrop](https://github.com/0xCozart/ProofDrop) is a standalone public showcase dApp for GasKit. It demonstrates a backend-owned sponsorship flow where a visitor claims a "GasKit Launch Proof" badge without holding IOTA tokens. ProofDrop runs in safe mock mode by default and is kept in a separate repository so the GasKit core remains focused on the self-hostable toolkit.
 
-Current role: external M1 showcase app for the GasKit integration pattern. Live ProofDrop testnet execution remains opt-in and requires a configured GasKit gateway, real package/function allowlist, and operator-owned testnet credentials.
+Current role: external M1 showcase app for the GasKit integration pattern. ProofDrop has a recorded live testnet execution for its deployed badge-claim target, while live operation remains opt-in and requires a configured GasKit gateway, package/function allowlist, and operator-owned testnet credentials.
 
 ## Target architecture
 
