@@ -214,9 +214,43 @@ Recommended static-host settings:
 - output directory: `apps/docs-site/dist`
 - Node version: `20`
 
-## Agent access
+## Agent access: start here
 
-AI coding agents should start with the repo-local GasKit skill at `skills/iota-gaskit/SKILL.md`. It gives agents the source map, Apex workflow expectations, safe verification ladder, and sponsor-gas boundaries for GasKit work.
+AI coding agents should start with the repo-local GasKit skill:
+
+```txt
+skills/iota-gaskit/SKILL.md
+```
+
+That skill is the fastest way to find the source map, Apex workflow expectations, safe verification ladder, and sponsor-gas boundaries for this repo. It tells agents where to start for SDK work, policy-gateway changes, testnet readiness, docs, examples, security, and hosted-docs updates.
+
+Recommended agent startup:
+
+1. Read `AGENTS.md`.
+2. Read `apex.workflow.json`.
+3. Read `skills/iota-gaskit/SKILL.md`.
+4. For architecture/product context, read `docs/architecture.md`, `docs/overview.md`, and `README.md`.
+5. Check `git status --short --branch` and preserve unrelated dirty work.
+
+Useful skill entry points:
+
+- SDK: `packages/sdk/src/client.ts`, `packages/sdk/src/types.ts`, `docs/sdk.md`
+- Policy gateway: `packages/policy-gateway/src/`, `apps/policy-gateway-service/src/server.ts`, `docs/policy.md`
+- Testnet readiness: `docs/testnet-readiness.md`, `docs/testnet-attempts.md`, `scripts/check-testnet-readiness.ts`
+- Security: `docs/security/secrets.md`, `docs/security/sponsor-wallet.md`, `scripts/scan-secrets.ts`
+- External showcase: [Gasless ProofDrop](https://proofdrop.xyz) and [github.com/0xCozart/ProofDrop](https://github.com/0xCozart/ProofDrop)
+
+Default safe checks:
+
+```bash
+npm test
+npm run typecheck
+npm run smoke:local
+npm run docs:check
+npm run secrets:scan
+```
+
+Live commands such as `npm run execute:testnet-demo` contact live IOTA services and consume sponsored testnet gas. Run them only with explicit operator intent and operator-owned credentials configured outside the repo.
 
 The hosted agent guide is `docs/agent-guide.md`.
 
